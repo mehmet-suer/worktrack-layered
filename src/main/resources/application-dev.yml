@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/worktrack-db;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      connection-test-query: SELECT 1
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+file:
+  upload-dir: /Users/mehmetsuer/Desktop/SpringCourse/worktrack/uploads
+
+jwt:
+   secret: UiZEKSMjY3MjOTRJVl5kRmJyODRqeDVOeHN2c2c0UGY=
+   expiration: 86400000
