@@ -1,5 +1,6 @@
 package com.worktrack.service.project;
 
+import com.worktrack.dto.request.project.AssignTaskRequest;
 import com.worktrack.dto.request.project.CreateTaskRequest;
 import com.worktrack.dto.response.project.TaskResponse;
 import com.worktrack.entity.project.Task;
@@ -11,4 +12,5 @@ public interface TaskService{
     List<TaskResponse> getTasksByProject(Long projectId);
     void deleteTask(Long taskId);
     Task findEntityByIdForced(Long taskId);
+    TaskResponse assignTask(Long projectId, Long taskId, AssignTaskRequest request);
 }

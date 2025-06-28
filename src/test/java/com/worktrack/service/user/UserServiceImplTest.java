@@ -456,7 +456,7 @@ public class UserServiceImplTest {
         );
         when(userDtoMapper.toDto(user)).thenReturn(userDto);
         // Act
-        UserDto result = userService.toUserDto(user);
+        UserDto result = userService.toDto(user);
 
         // Assert
         assertNotNull(result);
@@ -475,7 +475,7 @@ public class UserServiceImplTest {
         // Arrange
         User user = null;
         // Act
-        UserDto result = userService.toUserDto(user);
+        UserDto result = userService.toDto(user);
 
         // Assert
         assertNull(result);

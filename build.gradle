@@ -28,6 +28,7 @@ dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-web') {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
 	}
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-jetty'
 	implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 
@@ -53,4 +54,11 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+jar {
+	manifest {
+		attributes(
+				'Main-Class': 'com.worktrack.WorktrackApplication'
+		)
+	}
+}
 

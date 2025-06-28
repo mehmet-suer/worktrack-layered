@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional(rollbackFor = Exception.class) // Exception class i icin de rollback yap normal de sadece runtime exceptionlar icin yapar
+@Transactional(rollbackFor = Exception.class) // Roll back for all exceptions (including checked exceptions); by default, only RuntimeException triggers rollback.
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
@@ -55,7 +55,7 @@ public class ProjectServiceImpl implements ProjectService {
             project.setOwner(owner);
         }
         var createdProject = projectRepository.save(project);
-        return projectResponseMapper.toDto(createdProject, userService.toUserDto(owner));
+        return projectResponseMapper.toDto(createdProject, userService.toDto(owner));
     }
 
     @Override
@@ -66,7 +66,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .stream()
                 .map(project -> {
                     var owner = project.getOwner(); // DIKKAT: bunu servis icinde yapmaliyiz. controller da yapildiginda session kapanir ve LazyInitializationException firlatir.
-                    UserDto ownerDto = userService.toUserDto(owner);
+                    UserDto ownerDto = userService.toDto(owner);
                     return projectResponseMapper.toDto(project, ownerDto);
                 })
                 .toList();
@@ -82,7 +82,7 @@ public class ProjectServiceImpl implements ProjectService {
         List<ProjectResponse> responses = projects.stream()
                 .map(project -> {
                     User owner = project.getOwner();
-                    return projectResponseMapper.toDto(project, userService.toUserDto(owner));
+                    return projectResponseMapper.toDto(project, userService.toDto(owner));
                 })
                 .toList();
 
@@ -94,7 +94,7 @@ public class ProjectServiceImpl implements ProjectService {
     public Page<ProjectResponse> getAllProjectsV2(Pageable pageable) {
         Page<Project> page = projectRepository.findByStatus(Status.ACTIVE, pageable);
         List<ProjectResponse> responses = page.getContent().stream()
-                .map(project -> projectResponseMapper.toDto(project, userService.toUserDto(project.getOwner())))
+                .map(project -> projectResponseMapper.toDto(project, userService.toDto(project.getOwner())))
                 .toList();
 
         return new PageImpl<>(responses, pageable, page.getTotalElements());
@@ -109,7 +109,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse getProjectById(Long id) {
         Project project = findByIdForced(id);
         User owner = project.getOwner();
-        return projectResponseMapper.toDto(project, userService.toUserDto(owner));
+        return projectResponseMapper.toDto(project, userService.toDto(owner));
     }
 
     @Override

@@ -145,7 +145,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
-    public UserDto toUserDto(@Nullable User user) {
+    public UserDto toDto(@Nullable User user) {
         return (user != null) ? userDtoMapper.toDto(user) : null;
     }
 

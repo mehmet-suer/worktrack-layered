@@ -1,5 +1,6 @@
 package com.worktrack.controller;
 
+import com.worktrack.dto.request.project.AssignTaskRequest;
 import com.worktrack.dto.request.project.CreateTaskRequest;
 import com.worktrack.dto.response.project.TaskResponse;
 import com.worktrack.service.project.TaskService;
@@ -27,6 +28,17 @@ public class TaskController {
         TaskResponse response = taskService.createTask(projectId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @PatchMapping("/{taskId}/assign")
+    public ResponseEntity<TaskResponse> assignTask(
+            @PathVariable("projectId") Long projectId,
+            @PathVariable("taskId") Long taskId,
+            @Valid @RequestBody AssignTaskRequest request
+    ) {
+        TaskResponse response = taskService.assignTask(projectId, taskId, request);
+        return ResponseEntity.ok(response);
+    }
+
 
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getTasks(@PathVariable Long projectId) {

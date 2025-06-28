@@ -36,5 +36,5 @@ public interface UserService {
 
     User findEntityByIdForced(Long id);
 
-    UserDto toUserDto(User user);
+    UserDto toDto(User user);
 }
