@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping
+@RequestMapping("layered/api/v1")
 public class TaskAttachmentController {
 
     private final TaskAttachmentService taskAttachmentService;

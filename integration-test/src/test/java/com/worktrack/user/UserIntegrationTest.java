@@ -54,7 +54,7 @@ public class UserIntegrationTest {
         void shouldRegisterUserSuccessfully() throws Exception {
             var request = UserTestUtils.dummyRegistrationRequest();
 
-            mockMvc.perform(post("/api/users/register")
+            mockMvc.perform(post("/layered/api/v1/users/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JsonUtils.asJsonString(request))
                             .with(csrf()))
@@ -73,7 +73,7 @@ public class UserIntegrationTest {
             UserRegistrationRequest request = UserTestUtils.dummyInvalidRegistrationRequest();
             mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .post("/api/users/register")
+                                    .post("/layered/api/v1/users/register")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(JsonUtils.asJsonString(request))
                     )
@@ -86,13 +86,13 @@ public class UserIntegrationTest {
         @DisplayName("should throw exception when email already exists")
         void shouldThrowExceptionWhenEmailAlreadyExists() throws Exception {
             var firstUserRequest = UserTestUtils.dummyRegistrationRequest();
-            mockMvc.perform(post("/api/users/register")
+            mockMvc.perform(post("/layered/api/v1/users/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JsonUtils.asJsonString(firstUserRequest))
                             .with(csrf()))
                     .andExpect(status().isOk());
             var duplicateEmailRequest = UserTestUtils.dummyRegisterRequestWithEmail(firstUserRequest.email());
-            mockMvc.perform(post("/api/users/register")
+            mockMvc.perform(post("/layered/api/v1/users/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JsonUtils.asJsonString(duplicateEmailRequest))
                             .with(csrf()))
@@ -105,14 +105,14 @@ public class UserIntegrationTest {
         @DisplayName("should throw exception when username already exists")
         void shouldThrowExceptionWhenUsernameAlreadyExists() throws Exception {
             var firstUserRequest = UserTestUtils.dummyRegistrationRequest();
-            mockMvc.perform(post("/api/users/register")
+            mockMvc.perform(post("/layered/api/v1/users/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JsonUtils.asJsonString(firstUserRequest))
                             .with(csrf()))
                     .andExpect(status().isOk());
 
             var duplicateUsernameRequest = UserTestUtils.dummyRegisterRequestWithUsername(firstUserRequest.username());
-            mockMvc.perform(post("/api/users/register")
+            mockMvc.perform(post("/layered/api/v1/users/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JsonUtils.asJsonString(duplicateUsernameRequest))
                             .with(csrf()))

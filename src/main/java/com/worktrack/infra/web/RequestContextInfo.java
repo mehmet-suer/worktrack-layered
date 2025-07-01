@@ -28,5 +28,4 @@ public class RequestContextInfo {
         return request.getHeader("Accept-Language");
     }
 
-    // Genişletilebilir...
 }

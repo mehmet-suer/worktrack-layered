@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/projects/{projectId}/tasks")
+@RequestMapping("layered/api/v1/projects/{projectId}/tasks")
 public class TaskController {
     private final TaskService taskService;
 

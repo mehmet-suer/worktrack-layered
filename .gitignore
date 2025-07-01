@@ -37,3 +37,5 @@ out/
 .vscode/
 /integration-test/logs/
 /integration-test/data/
+/uploads/
+/data/

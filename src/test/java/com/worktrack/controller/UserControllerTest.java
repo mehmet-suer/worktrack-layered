@@ -62,7 +62,7 @@ public class UserControllerTest {
             when(userService.register(any(UserRegistrationRequest.class))).thenReturn(expectedUserDto);
             var mvcResult = mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .post("/api/users/register")
+                                    .post("/layered/api/v1/users/register")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(JsonUtils.asJsonString(request))
                     )
@@ -83,7 +83,7 @@ public class UserControllerTest {
 
             mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .post("/api/users/register")
+                                    .post("/layered/api/v1/users/register")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(JsonUtils.asJsonString(request))
                     )
@@ -107,7 +107,7 @@ public class UserControllerTest {
             when(userService.update(eq(userId), any(UserUpdateRequest.class))).thenReturn(expectedUserDto);
             var mvcResult = mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .put("/api/users/{id}", userId)
+                                    .put("/layered/api/v1/users/{id}", userId)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(JsonUtils.asJsonString(request))
                     )
@@ -131,7 +131,7 @@ public class UserControllerTest {
 
             mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .put("/api/users/{id}", userId)
+                                    .put("/layered/api/v1/users/{id}", userId)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(JsonUtils.asJsonString(request))
                     )
@@ -148,7 +148,7 @@ public class UserControllerTest {
 
             mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .put("/api/users/{id}", 1L)
+                                    .put("/layered/api/v1/users/{id}", 1L)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(JsonUtils.asJsonString(request))
                     )
@@ -169,7 +169,7 @@ public class UserControllerTest {
 
             var mvcResult = mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .get("/api/users")
+                                    .get("/layered/api/v1/users")
                                     .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isOk())
@@ -197,7 +197,7 @@ public class UserControllerTest {
 
             var mvcResult = mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .get("/api/users/{id}", userId)
+                                    .get("/layered/api/v1/users/{id}", userId)
                                     .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isOk())
@@ -218,7 +218,7 @@ public class UserControllerTest {
 
             mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .get("/api/users/{id}", userId)
+                                    .get("/layered/api/v1/users/{id}", userId)
                                     .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isNotFound());
@@ -235,7 +235,7 @@ public class UserControllerTest {
             doNothing().when(userService).deleteUser(eq(userId));
             mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .delete("/api/users/{id}", userId)
+                                    .delete("/layered/api/v1/users/{id}", userId)
                                     .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isNoContent());
@@ -250,7 +250,7 @@ public class UserControllerTest {
             doThrow(new EntityNotFoundException("User not found")).when(userService).deleteUser(eq(unknownUserId));
             mockMvc.perform(
                             MockMvcRequestBuilders
-                                    .delete("/api/users/{id}", unknownUserId)
+                                    .delete("/layered/api/v1/users/{id}", unknownUserId)
                                     .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isNotFound());

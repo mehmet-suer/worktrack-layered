@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/actuator/health", "api/auth/**").permitAll()
+                        .requestMatchers("/layered/api/v1/users/register", "/actuator/health", "/layered/api/v1/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
