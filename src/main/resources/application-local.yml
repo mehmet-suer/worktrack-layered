@@ -13,3 +13,30 @@ spring:
 jwt:
   secret: ${jwt.secret}
   expiration: 86400000
+
+management:
+  metrics:
+    tags:
+      application: worktrack
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+
+otel:
+  exporter:
+    otlp:
+      endpoint: http://localhost:4317
+      protocol: grpc
+  resource:
+    attributes:
+      service.name: worktrack
+
+  logs:
+    exporter: none
+  metrics:
+    exporter: none

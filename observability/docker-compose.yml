@@ -1,0 +1,71 @@
+
+services:
+
+  ## 🎯 Loki
+  loki:
+    image: grafana/loki:2.9.3
+    command: -config.file=/etc/loki/config.yaml
+    ports:
+      - "3100:3100"
+    user: root
+    volumes:
+      - ./loki.yml:/etc/loki/config.yaml
+      - ${OBSERVABILITY_DATA}/loki-data:/loki
+    networks:
+      - observability
+
+  promtail:
+    image: grafana/promtail:2.9.3
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./promtail.yml:/etc/promtail/promtail-config.yml
+      - ./../logs:/var/log/worktrack
+    networks:
+      - observability
+
+  ## 🎯 Prometheus
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alerts:/etc/prometheus/alerts
+      - ${OBSERVABILITY_DATA}/prometheus-data:/prometheus
+    networks:
+      - observability
+
+  ## 🎯 Tempo
+  tempo:
+    image: grafana/tempo:2.4.1
+    command: ["-config.file=/etc/tempo.yaml", "-target=all" ]
+    ports:
+      - "3200:3200"     # HTTP query frontend
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    volumes:
+      - ./tempo.yml:/etc/tempo.yaml
+      - ${OBSERVABILITY_DATA}/tempo-data:/var/tempo
+    networks:
+      - observability
+
+  ## 🎯 Grafana
+  grafana:
+    image: grafana/grafana:11.0.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    volumes:
+      - ${OBSERVABILITY_DATA}/grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - observability
+
+networks:
+  observability:

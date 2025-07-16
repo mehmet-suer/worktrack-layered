@@ -2,8 +2,6 @@ package com.worktrack.controller;
 
 import com.worktrack.dto.response.DownloadFileResponse;
 import com.worktrack.dto.response.project.TaskAttachmentResponse;
-import com.worktrack.entity.project.Task;
-import com.worktrack.entity.project.TaskAttachment;
 import com.worktrack.service.project.TaskAttachmentService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;

@@ -1,6 +1,8 @@
 package com.worktrack.infra.hibernate;
 
 import com.worktrack.entity.base.Status;
+import com.worktrack.repo.hibernate.HibernateFilterNames;
+import com.worktrack.repo.hibernate.HibernateFilterParameters;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.hibernate.Filter;
@@ -16,7 +18,10 @@ public class HibernateFilterManager {
     private EntityManager entityManager;
 
     public void enableNotDeletedFilter() {
-        enableFilterWithParams("notDeleted", Map.of("deletedStatus", Status.DELETED.name()));
+        enableFilterWithParams(
+                HibernateFilterNames.NOT_DELETED,
+                Map.of(HibernateFilterParameters.DELETED_STATUS, Status.DELETED.name())
+        );
     }
 
     public void enableFilterWithParams(String filterName, Map<String, Object> params) {

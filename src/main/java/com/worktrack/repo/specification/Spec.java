@@ -83,12 +83,4 @@ public class Spec {
         return spec1.and(spec2);
     }
 
-
-    @FunctionalInterface
-    interface Combiner<T> {
-        Specification<T> combine(Specification<T> spec1, Specification<T> spec2);
-    }
-
-
-
 }

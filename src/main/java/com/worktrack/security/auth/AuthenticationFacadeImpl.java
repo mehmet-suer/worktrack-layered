@@ -1,6 +1,7 @@
 package com.worktrack.security.auth;
 
 import com.worktrack.entity.auth.User;
+import com.worktrack.exception.auth.AuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,6 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade{
         if (principal instanceof User user) {
             return user.getId();
         }
-        throw new IllegalStateException("User id bulunamadı");
+        throw new AuthenticationException("Cannot determine current user id. Principal is not a valid User instance.");
     }
 }

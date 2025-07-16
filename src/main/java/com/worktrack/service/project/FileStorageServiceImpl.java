@@ -35,8 +35,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             Files.copy(input, targetPath, StandardCopyOption.REPLACE_EXISTING);
             return targetPath.toString();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            throw new FileStorageException("Dosya yüklenemedi", e);
+            throw new FileStorageException("Could not store file", e);
         }
     }
 
@@ -44,7 +43,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         try {
             return new UrlResource(Paths.get(filePath).toUri());
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Dosya yüklenemedi", e);
+            throw new FileStorageException("Could not load file", e);
         }
     }
 
@@ -52,7 +51,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         try {
             Files.deleteIfExists(Paths.get(filePath));
         } catch (IOException e) {
-            throw new RuntimeException("Dosya silinemedi", e);
+            throw new FileStorageException("Could not delete file", e);
         }
     }
 }

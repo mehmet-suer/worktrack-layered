@@ -31,6 +31,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-jetty'
 	implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-autoconfigure:2.7.0'
+	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+
 
 	implementation("org.flywaydb:flyway-core:11.8.2")
 	implementation("org.flywaydb:flyway-mysql:11.8.2")

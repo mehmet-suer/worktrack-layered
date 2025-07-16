@@ -5,10 +5,10 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MyCustomHealthIndicator implements HealthIndicator {
+public class ExampleHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
-        return Health.up().withDetail("custom", "Available").build();
+        return Health.up().withDetail("example", "Available").build();
     }
 
 }

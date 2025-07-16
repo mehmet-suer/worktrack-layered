@@ -54,14 +54,11 @@ public class TaskAttachmentServiceImpl implements TaskAttachmentService {
 
     @Transactional(readOnly = true)
     public List<TaskAttachmentResponse> getAllAttachments(Long taskId) {
-        return attachmentRepository.findAllByTaskId(taskId).stream().map(attachment -> {
-            TaskAttachmentResponse response = new TaskAttachmentResponse(
-                    attachment.getId(),
-                    attachment.getFileName(),
-                    attachment.getFilePath()
-            );
-            return response;
-        }).toList();
+        return attachmentRepository.findAllByTaskId(taskId).stream().map(attachment -> new TaskAttachmentResponse(
+                attachment.getId(),
+                attachment.getFileName(),
+                attachment.getFilePath()
+        )).toList();
     }
 
     @Transactional

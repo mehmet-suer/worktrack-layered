@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequireRole {
-    String[] value();            // Birden fazla rol alabilir
-    String message() default ""; // Opsiyonel açıklama
+    String[] value();
+    String message() default "";
     boolean loggable() default false;
 }

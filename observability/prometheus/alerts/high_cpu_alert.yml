@@ -1,0 +1,10 @@
+groups:
+  - name: worktrack_alerts
+    rules:
+      - alert: WorktrackHighCPU
+        expr: process_cpu_seconds_total > 0
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          description: "Worktrack app  high CPU usage activity detected."

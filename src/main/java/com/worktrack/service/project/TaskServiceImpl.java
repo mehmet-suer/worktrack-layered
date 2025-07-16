@@ -103,8 +103,8 @@ public class TaskServiceImpl implements TaskService {
     public void deleteTask(Long taskId) {
         Task task = findEntityByIdForced(taskId);
         task.setStatus(Status.DELETED);
-        taskRepository.save(task); // DIKKAT: dirty checking, buna gerek yok cunku save yapmazsan bile delete yapar, transactional annotationu oldugu icin.
-
+        taskRepository.save(task);  // NOTE: Due to Hibernate dirty checking, calling save() here is not required.
+                                    // The entity will be automatically updated when the transaction is committed.
         publishDeleteEventIfNeeded(task);
     }
 

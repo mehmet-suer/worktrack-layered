@@ -65,7 +65,9 @@ public class ProjectServiceImpl implements ProjectService {
         return projectRepository.findAllByOwnerIdWithOwner(currentUser)
                 .stream()
                 .map(project -> {
-                    var owner = project.getOwner(); // DIKKAT: bunu servis icinde yapmaliyiz. controller da yapildiginda session kapanir ve LazyInitializationException firlatir.
+                    var owner = project.getOwner(); // NOTE: This must be done inside the service layer.
+                                                    // If accessed in the controller, the session will be closed
+                                                    // and a LazyInitializationException will be thrown.
                     UserDto ownerDto = userService.toDto(owner);
                     return projectResponseMapper.toDto(project, ownerDto);
                 })

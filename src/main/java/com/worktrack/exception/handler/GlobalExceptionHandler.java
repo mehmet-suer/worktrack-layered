@@ -1,6 +1,7 @@
 package com.worktrack.exception.handler;
 
 import com.worktrack.dto.response.ErrorResponse;
+import com.worktrack.exception.ErrorMessages;
 import com.worktrack.exception.FileStorageException;
 import com.worktrack.exception.auth.AuthenticationException;
 import com.worktrack.exception.auth.InvalidCredentialsException;
@@ -61,7 +62,7 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .reduce((m1, m2) -> m1 + "; " + m2)
-                .orElse("Validation failed");
+                .orElse(ErrorMessages.VALIDATION_FAILED);
         logger.error("Validation failed: {}", msg, ex);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -93,7 +94,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex) {
         logger.error("Access denied: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(ACCESS_DENIED, "Bu işlemi yapmaya yetkiniz yok."));
+                .body(new ErrorResponse(ACCESS_DENIED, ErrorMessages.ACCESS_DENIED));
     }
 
     @ExceptionHandler(QueryTimeoutException.class)
@@ -115,7 +116,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
         logger.error("Unknown error occurred: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(INTERNAL_ERROR, "Unknown error occurred"));
+                .body(new ErrorResponse(INTERNAL_ERROR, ErrorMessages.UNKNOWN_ERROR));
     }
 
 }

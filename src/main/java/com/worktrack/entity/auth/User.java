@@ -1,23 +1,17 @@
 package com.worktrack.entity.auth;
 
 import com.worktrack.entity.base.AuditableBaseEntity;
-import com.worktrack.entity.base.StatusAwareBaseEntity;
 import com.worktrack.entity.project.Project;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 
-@FilterDef(name = "notDeleted", parameters = @ParamDef(name = "deletedStatus", type = String.class))
-@Filter(name = "notDeleted", condition = "status != :deletedStatus")
 @Entity
 @Table(name = "users")
 public class User extends AuditableBaseEntity implements UserDetails {

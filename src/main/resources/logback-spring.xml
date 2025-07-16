@@ -1,9 +1,29 @@
 <configuration>
+
+    <!-- JSON Encoder -->
+    <include resource="net/logstash/logback/logback.xml"/>
+
+    <!-- Console Appender -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
+    <!-- File Appender -->
+    <springProfile name="local">
+        <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+            <file>logs/application.json</file>
+            <append>true</append>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <customFields>{"environment":"local", "application":"worktrack"}</customFields>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <!-- Root Logger -->
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
+        <springProfile name="local">
+            <appender-ref ref="FILE"/>
+        </springProfile>
     </root>
 </configuration>
