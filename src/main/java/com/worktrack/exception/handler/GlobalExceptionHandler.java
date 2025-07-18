@@ -28,14 +28,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex) {
-        logger.error("Authentication failed: {}", ex.getMessage(), ex);
+        logger.info("Authentication failed: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(AUTHENTICATION_FAILED, ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
-        logger.error("Invalid credentials: {}", ex.getMessage(), ex);
+        logger.info("Invalid credentials: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(INVALID_CREDENTIAL, ex.getMessage()));
     }
@@ -43,14 +43,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateUserException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateUser(DuplicateUserException ex) {
-        logger.error("Duplicate user: {}", ex.getMessage(), ex);
+        logger.info("Duplicate user: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(DUPLICATE_USER, ex.getMessage()));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
-        logger.error("Entity not found: {}", ex.getMessage(), ex);
+        logger.info("Entity not found: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(ENTITY_NOT_FOUND, ex.getMessage()));
     }
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .reduce((m1, m2) -> m1 + "; " + m2)
                 .orElse(ErrorMessages.VALIDATION_FAILED);
-        logger.error("Validation failed: {}", msg, ex);
+        logger.info("Validation failed: {}", msg, ex);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(VALIDATION_ERROR, msg));
@@ -92,14 +92,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex) {
-        logger.error("Access denied: {}", ex.getMessage(), ex);
+        logger.info("Access denied: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse(ACCESS_DENIED, ErrorMessages.ACCESS_DENIED));
     }
 
     @ExceptionHandler(QueryTimeoutException.class)
     public ResponseEntity<ErrorResponse> handleQueryTimeout(QueryTimeoutException ex) {
-        logger.error("Database query timeout: {}", ex.getMessage(), ex);
+        logger.warn("Database query timeout: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
                 .body(new ErrorResponse(DB_QUERY_TIMEOUT, ex.getMessage()));
     }

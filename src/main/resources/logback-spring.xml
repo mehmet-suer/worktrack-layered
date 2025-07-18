@@ -1,8 +1,4 @@
 <configuration>
-
-    <!-- JSON Encoder -->
-    <include resource="net/logstash/logback/logback.xml"/>
-
     <!-- Console Appender -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
@@ -19,11 +15,17 @@
         </appender>
     </springProfile>
 
-    <!-- Root Logger -->
+    <!-- Root Logger (default) -->
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
-        <springProfile name="local">
-            <appender-ref ref="FILE"/>
-        </springProfile>
     </root>
+
+    <!-- Root Logger (local profile) -->
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
 </configuration>

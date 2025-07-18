@@ -4,10 +4,11 @@ import com.worktrack.annotation.RequireRole;
 import com.worktrack.security.util.SecurityUtils;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,10 +18,9 @@ import java.util.stream.Stream;
 @Aspect
 @Component
 public class RequireRoleAspect {
-
+    private static final Logger logger = LoggerFactory.getLogger(RequireRoleAspect.class);
     @Before("@annotation(requireRole)")
     public void checkUserRole(RequireRole requireRole) {
-        logIfLoggable(requireRole);
         var auth = SecurityUtils.getAuthenticationForced();
         Set<String> expectedAuthorities = getExpectedAuthorities(requireRole);
 
@@ -43,13 +43,5 @@ public class RequireRoleAspect {
         return Stream.of(requiredRoles)
                 .map(role -> "ROLE_" + role)
                 .collect(Collectors.toSet());
-    }
-
-    private static void logIfLoggable(RequireRole requireRole) {
-        boolean loggable = requireRole.loggable();
-        String[] requiredRoles =  requireRole.value();
-        if (loggable) {
-            System.out.println("Role check: " + Arrays.toString(requiredRoles));
-        }
     }
 }
