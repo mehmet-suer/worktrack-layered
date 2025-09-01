@@ -3,13 +3,18 @@ package com.worktrack.entity.project;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.AuditableBaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "project")
 public class Project extends AuditableBaseEntity {
 
+    @NotBlank
+    @Size(max = 255)
     private String name;
 
+    @Size(max = 255)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)

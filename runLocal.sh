@@ -36,6 +36,7 @@ if [ "$START_OBSERVABILITY" = true ]; then
   cd "$PROJECT_ROOT"
 else
   echo "✅ Skipping observability stack."
+  export OTEL_SDK_DISABLED=true
 fi
 
 # Gradle bootRun

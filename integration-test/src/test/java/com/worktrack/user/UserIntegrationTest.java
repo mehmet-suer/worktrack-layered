@@ -19,8 +19,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static com.worktrack.dto.response.ErrorCode.DUPLICATE_USER;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

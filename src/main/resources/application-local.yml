@@ -10,6 +10,12 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+
+  cloud:
+    config:enabled: false
+    config:
+      import-check:
+        enabled: false
 jwt:
   secret: ${jwt.secret}
   expiration: 86400000

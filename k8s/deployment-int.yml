@@ -15,16 +15,18 @@ spec:
       labels:
         app: worktrack-layered
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - name: worktrack-layered
           image: gcr.io/operating-edge-464110-v6/worktrack-layered:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: int
             - name: DB_HOST
-              value: 127.0.0.1
+              value: "127.0.0.1"
             - name: DB_PORT
               value: "3306"
             - name: DB_USER
@@ -51,32 +53,53 @@ spec:
               memory: "1Gi"
           livenessProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health/liveness
               port: 8000
             initialDelaySeconds: 30
             periodSeconds: 15
             failureThreshold: 4
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health/readiness
               port: 8000
             initialDelaySeconds: 15
             periodSeconds: 10
             failureThreshold: 4
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1000  # Non-root user
+            runAsUser: 1000
             allowPrivilegeEscalation: false
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","sleep 5"]
         - name: cloud-sql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:1.33.4
           command:
             - "/cloud_sql_proxy"
-            - "-instances=operating-edge-464110-v6:us-central1:worktrack-layered=tcp:3306"
+            - "-instances=spartan-impact-470620-a4:europe-central2:worktrack-layered=tcp:3306"
             - "-credential_file=/secrets/service_account.json"
           volumeMounts:
             - name: cloudsql-instance-credentials
               mountPath: /secrets
               readOnly: true
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 5
+            periodSeconds: 10
           securityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
@@ -84,7 +107,6 @@ spec:
         - name: cloudsql-instance-credentials
           secret:
             secretName: cloudsql-sa-secret
-
 ---
 apiVersion: v1
 kind: Service
@@ -102,13 +124,14 @@ spec:
       targetPort: 8000
       nodePort: 30080
   type: NodePort
-
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: worktrack-layered-hpa
   namespace: worktrack-layered
+  labels:
+    app: worktrack-layered
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

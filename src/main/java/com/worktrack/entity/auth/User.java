@@ -21,20 +21,24 @@ public class User extends AuditableBaseEntity implements UserDetails {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @NotBlank
-    @Email
-    @Column(unique = true, nullable = false)
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    @Size(max = 100, message = "Email must be at most 100 characters")
+    @Column(length = 100, unique = true, nullable = false)
     private String email;
 
     @NotBlank
-    @Size(min = 6)
+    @Size(min = 6, max = 255)
     private String password;
 
+    @NotBlank
+    @Size(max = 100)
     @Column(name = "full_name")
     private String fullName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Size(max = 20)
     private Role role;
 
 

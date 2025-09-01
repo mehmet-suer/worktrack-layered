@@ -2,6 +2,7 @@ package com.worktrack.entity.project;
 
 import com.worktrack.entity.base.AuditableBaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -9,10 +10,12 @@ import jakarta.validation.constraints.Size;
 public class TaskAttachment extends AuditableBaseEntity {
 
     @Column(nullable = false)
+    @NotBlank()
     private String fileName;
 
     @Column(nullable = false)
     @Size(max = 1024)
+    @NotBlank
     private String filePath;
 
     @ManyToOne(fetch = FetchType.LAZY)

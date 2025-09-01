@@ -4,18 +4,24 @@ import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.entity.base.StatusAwareBaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "task")
 public class Task extends StatusAwareBaseEntity {
 
     @Column(nullable = false)
+    @NotBlank
+    @Size(max = 255)
     private String title;
 
+    @Size(max = 255)
     private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "task_status", nullable = false)
+    @Size(max = 50)
     private TaskStatus taskStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
