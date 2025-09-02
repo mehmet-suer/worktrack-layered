@@ -8,6 +8,12 @@ spring:
     password:
     hikari:
       connection-test-query: SELECT 1
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+
   h2:
     console:
       enabled: true
@@ -23,3 +29,7 @@ spring:
 
 file:
   upload-dir: /Users/mehmetsuer/Desktop/SpringCourse/worktrack/testuploads
+
+eureka:
+  client:
+    enabled: false

@@ -34,6 +34,9 @@ public class SecurityConfig {
                                 "/layered/api/v1/users/register",
                                 "/actuator/health",
                                 "/actuator/prometheus",
+                                "/actuator/health/liveness",
+                                "/actuator/health/readiness",
+
                                 "/layered/api/v1/auth/**")
                         .permitAll()
                         .anyRequest().authenticated()

@@ -95,14 +95,15 @@ jobs:
       - name: Ensure namespace exists
         run: kubectl get ns $NAMESPACE || kubectl create ns $NAMESPACE
 
-      - name: Apply deployment (once)
-        run: kubectl apply -n $NAMESPACE -f k8s/deployment-int.yml
+      - name: Install envsubst
+        run: sudo apt-get update && sudo apt-get install -y gettext-base
 
-      - name: Set container image (to Docker Hub tag)
+      - name: Apply deployment (with envsubst)
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          kubectl set image deployment/${APP_NAME} \
-            ${APP_NAME}=${IMAGE_REPO}:${IMAGE_TAG} \
-            -n $NAMESPACE
+          envsubst < k8s/deployment-int.yml | kubectl apply -n $NAMESPACE -f -
 
       - name: Wait rollout
-        run: kubectl rollout status deployment/${APP_NAME} -n $NAMESPACE --timeout=180s
+        run: kubectl rollout status deployment/${APP_NAME} -n $NAMESPACE --timeout=360s

@@ -27,6 +27,32 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+configurations {
+    testImplementation {
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
+    }
+    testRuntimeOnly {
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
+    }
+    testRuntimeClasspath {
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
+    }
+}
+
+bootJar { enabled = false }
+bootRun { enabled = false }
+jar { enabled = true }
+
 test {
     useJUnitPlatform()
+}
+
+tasks.named('test') {
+    systemProperty 'spring.profiles.active', 'int'
+    systemProperty 'spring.cloud.config.enabled', 'false'
+    systemProperty 'spring.cloud.config.import-check.enabled', 'false'
+    systemProperty 'eureka.client.enabled', 'false'
 }

@@ -38,7 +38,6 @@ public class User extends AuditableBaseEntity implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Size(max = 20)
     private Role role;
 
 
