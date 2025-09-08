@@ -17,7 +17,7 @@ spring:
       ddl-auto: update
     show-sql: true
 file:
-  upload-dir: /Users/mehmetsuer/Desktop/SpringCourse/worktrack/uploads
+  upload-dir: ${java.io.tmpdir}/worktrack-uploads
 
 jwt:
    secret: UiZEKSMjY3MjOTRJVl5kRmJyODRqeDVOeHN2c2c0UGY=

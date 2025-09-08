@@ -1,6 +1,7 @@
 package com.worktrack.user;
 
 
+import com.worktrack.base.AbstractWebIntegrationTest;
 import com.worktrack.dto.request.auth.UserRegistrationRequest;
 import com.worktrack.repo.user.UserRepository;
 import com.worktrack.util.JsonUtils;
@@ -10,24 +11,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.ResultActions;
 
 import static com.worktrack.dto.response.ErrorCode.DUPLICATE_USER;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-public class UserIntegrationTest {
+
+public class UserIntegrationTest extends AbstractWebIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,17 +46,20 @@ public class UserIntegrationTest {
         @Test
         @DisplayName("should register user successfully")
         void shouldRegisterUserSuccessfully() throws Exception {
+            // arrange
+            var countBeforeTest = userRepository.count();
             var request = UserTestUtils.dummyRegistrationRequest();
 
-            mockMvc.perform(post("/layered/api/v1/users/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtils.asJsonString(request))
-                            .with(csrf()))
-                    .andExpect(status().isOk())
+            // act
+            var result = register(request);
+
+            // assert
+            result.andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").exists())
                     .andExpect(jsonPath("$.username").value(request.username()))
                     .andExpect(jsonPath("$.email").value(request.email()));
 
+            assertThat(userRepository.count()).isEqualTo(countBeforeTest + 1);
             assertTrue(userRepository.findByUsername(request.username()).isPresent());
         }
 
@@ -68,55 +67,60 @@ public class UserIntegrationTest {
         @Test
         @DisplayName("should return 400 when registration request is invalid")
         void shouldReturn400WhenRegisterRequestIsInvalid() throws Exception {
+            // arrange
             UserRegistrationRequest request = UserTestUtils.dummyInvalidRegistrationRequest();
-            mockMvc.perform(
-                            MockMvcRequestBuilders
-                                    .post("/layered/api/v1/users/register")
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(JsonUtils.asJsonString(request))
-                    )
-                    .andExpect(status().isBadRequest())
-                    .andReturn();
+            // act
+            var result = register(request);
+            // assert
+            result.andExpect(status().isBadRequest())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
         }
 
 
         @Test
         @DisplayName("should throw exception when email already exists")
         void shouldThrowExceptionWhenEmailAlreadyExists() throws Exception {
+            // arrange
             var firstUserRequest = UserTestUtils.dummyRegistrationRequest();
-            mockMvc.perform(post("/layered/api/v1/users/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtils.asJsonString(firstUserRequest))
-                            .with(csrf()))
-                    .andExpect(status().isOk());
+            register(firstUserRequest).andExpect(status().isOk());
+            var before = userRepository.count();
             var duplicateEmailRequest = UserTestUtils.dummyRegisterRequestWithEmail(firstUserRequest.email());
-            mockMvc.perform(post("/layered/api/v1/users/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtils.asJsonString(duplicateEmailRequest))
-                            .with(csrf()))
-                    .andExpect(status().isBadRequest())
+
+            // act
+            var result = register(duplicateEmailRequest);
+
+            // assert
+            result.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value(DUPLICATE_USER.name()))
                     .andExpect(jsonPath("$.message").value("Email already registered"));
+            assertThat(userRepository.count()).isEqualTo(before);
         }
 
         @Test
         @DisplayName("should throw exception when username already exists")
         void shouldThrowExceptionWhenUsernameAlreadyExists() throws Exception {
+            // arrange
             var firstUserRequest = UserTestUtils.dummyRegistrationRequest();
-            mockMvc.perform(post("/layered/api/v1/users/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtils.asJsonString(firstUserRequest))
-                            .with(csrf()))
-                    .andExpect(status().isOk());
-
+            register(firstUserRequest).andExpect(status().isOk());
+            var before = userRepository.count();
             var duplicateUsernameRequest = UserTestUtils.dummyRegisterRequestWithUsername(firstUserRequest.username());
-            mockMvc.perform(post("/layered/api/v1/users/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(JsonUtils.asJsonString(duplicateUsernameRequest))
-                            .with(csrf()))
-                    .andExpect(status().isBadRequest())
+            // act
+            var result = register(duplicateUsernameRequest);
+
+            // assert
+            result.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value(DUPLICATE_USER.name()))
                     .andExpect(jsonPath("$.message").value("Username already registered"));
+            assertThat(userRepository.count()).isEqualTo(before);
         }
     }
+
+    private ResultActions register(UserRegistrationRequest req) throws Exception {
+        return mockMvc.perform(post("/layered/api/v1/users/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(JsonUtils.asJsonString(req))
+                .with(csrf()));
+    }
+
 }
