@@ -2,14 +2,19 @@ package com.worktrack.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class JsonUtils {
-    private static final ObjectMapper mapper = new ObjectMapper() .findAndRegisterModules()
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);;
+    private final ObjectMapper mapper;
 
-    public static String asJsonString(Object obj) {
+    public JsonUtils(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public String asJsonString(Object obj) {
         try {
             return mapper.writeValueAsString(obj);
         } catch (Exception e) {
@@ -17,7 +22,7 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T fromJsonString(String json, Class<T> clazz) {
+    public <T> T fromJsonString(String json, Class<T> clazz) {
         try {
             return mapper.readValue(json, clazz);
         } catch (Exception e) {
@@ -25,7 +30,7 @@ public class JsonUtils {
         }
     }
 
-    public static <T> List<T> fromJsonArrayString(String json, Class<T> clazz) {
+    public <T> List<T> fromJsonArrayString(String json, Class<T> clazz) {
         try {
             return mapper.readValue(
                     json,

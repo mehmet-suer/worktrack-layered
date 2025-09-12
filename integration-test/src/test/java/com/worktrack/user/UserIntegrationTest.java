@@ -28,6 +28,8 @@ public class UserIntegrationTest extends AbstractWebIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    JsonUtils jsonUtils;
 
     @Autowired
     private UserRepository userRepository;
@@ -119,7 +121,7 @@ public class UserIntegrationTest extends AbstractWebIntegrationTest {
         return mockMvc.perform(post("/layered/api/v1/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.asJsonString(req))
+                .content(jsonUtils.asJsonString(req))
                 .with(csrf()));
     }
 

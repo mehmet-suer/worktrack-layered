@@ -1,6 +1,7 @@
 package com.worktrack.controller;
 
 
+import com.worktrack.config.JsonTestConfig;
 import com.worktrack.dto.request.auth.UserRegistrationRequest;
 import com.worktrack.dto.request.auth.UserUpdateRequest;
 import com.worktrack.dto.response.user.UserDto;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,12 +35,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(JsonTestConfig.class)
 public class UserControllerTest {
     private static final Logger logger = LoggerFactory.getLogger(UserControllerTest.class);
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired JsonUtils jsonUtils;
 
     @MockitoBean
     private JwtService jwtService;
@@ -64,12 +68,12 @@ public class UserControllerTest {
                             MockMvcRequestBuilders
                                     .post("/layered/api/v1/users/register")
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .content(JsonUtils.asJsonString(request))
+                                    .content(jsonUtils.asJsonString(request))
                     )
                     .andExpect(status().isOk())
                     .andReturn();
             String responseBody = mvcResult.getResponse().getContentAsString();
-            UserDto actual = JsonUtils.fromJsonString(responseBody, UserDto.class);
+            UserDto actual = jsonUtils.fromJsonString(responseBody, UserDto.class);
 
             assertEquals(expectedUserDto, actual);
             verify(userService).register(any(UserRegistrationRequest.class));
@@ -85,7 +89,7 @@ public class UserControllerTest {
                             MockMvcRequestBuilders
                                     .post("/layered/api/v1/users/register")
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .content(JsonUtils.asJsonString(request))
+                                    .content(jsonUtils.asJsonString(request))
                     )
                     .andExpect(status().isBadRequest())
                     .andReturn();
@@ -109,12 +113,12 @@ public class UserControllerTest {
                             MockMvcRequestBuilders
                                     .put("/layered/api/v1/users/{id}", userId)
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .content(JsonUtils.asJsonString(request))
+                                    .content(jsonUtils.asJsonString(request))
                     )
                     .andExpect(status().isOk())
                     .andReturn();
             String responseBody = mvcResult.getResponse().getContentAsString();
-            UserDto actual = JsonUtils.fromJsonString(responseBody, UserDto.class);
+            UserDto actual = jsonUtils.fromJsonString(responseBody, UserDto.class);
 
             assertEquals(expectedUserDto, actual);
             verify(userService).update(eq(userId), any(UserUpdateRequest.class));
@@ -133,7 +137,7 @@ public class UserControllerTest {
                             MockMvcRequestBuilders
                                     .put("/layered/api/v1/users/{id}", userId)
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .content(JsonUtils.asJsonString(request))
+                                    .content(jsonUtils.asJsonString(request))
                     )
                     .andExpect(status().isNotFound());
 
@@ -150,7 +154,7 @@ public class UserControllerTest {
                             MockMvcRequestBuilders
                                     .put("/layered/api/v1/users/{id}", 1L)
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .content(JsonUtils.asJsonString(request))
+                                    .content(jsonUtils.asJsonString(request))
                     )
                     .andExpect(status().isBadRequest());
             verifyNoInteractions(userService);
@@ -175,7 +179,7 @@ public class UserControllerTest {
                     .andExpect(status().isOk())
                     .andReturn();
             String responseBody = mvcResult.getResponse().getContentAsString();
-            List<UserDto> actual = JsonUtils.fromJsonArrayString(responseBody, UserDto.class);
+            List<UserDto> actual = jsonUtils.fromJsonArrayString(responseBody, UserDto.class);
 
             assertEquals(1, actual.size());
             assertEquals(userDto, actual.getFirst());
@@ -203,7 +207,7 @@ public class UserControllerTest {
                     .andExpect(status().isOk())
                     .andReturn();
             String responseBody = mvcResult.getResponse().getContentAsString();
-            UserDto actual = JsonUtils.fromJsonString(responseBody, UserDto.class);
+            UserDto actual = jsonUtils.fromJsonString(responseBody, UserDto.class);
 
             assertEquals(userDto, actual);
             verify(userService).findById(userId);
