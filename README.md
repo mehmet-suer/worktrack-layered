@@ -13,7 +13,7 @@
 ## Testing
 
 - **Unit Tests**:  
-  Written with JUnit 5 and Mockito for service and repository layers.
+  Written with JUnit 5 and Mockito
 - **Integration Tests**:  
   Using Spring Boot Test and MockMvc for end-to-end API testing.
 - **Test Utilities**:  
@@ -46,7 +46,6 @@
 - Centralized error handling with meaningful error codes
 - Secure password storage (hashing)
 - Role-based access control
-- Comprehensive unit and integration test coverage
 - Automated CI/CD pipeline and cloud-native deployment
 
 ## References
