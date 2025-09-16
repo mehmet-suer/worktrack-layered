@@ -23,7 +23,7 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<TaskResponse> createTask(
             @PathVariable("projectId") Long projectId,
-            @RequestBody @Valid CreateTaskRequest request) {
+            @Valid @RequestBody CreateTaskRequest request) {
         TaskResponse response = taskService.createTask(projectId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -32,8 +32,7 @@ public class TaskController {
     public ResponseEntity<TaskResponse> assignTask(
             @PathVariable("projectId") Long projectId,
             @PathVariable("taskId") Long taskId,
-            @Valid @RequestBody AssignTaskRequest request
-    ) {
+            @Valid @RequestBody AssignTaskRequest request) {
         TaskResponse response = taskService.assignTask(projectId, taskId, request);
         return ResponseEntity.ok(response);
     }

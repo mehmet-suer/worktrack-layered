@@ -12,5 +12,7 @@ public enum ErrorCode {
     ACCESS_DENIED,
     DB_QUERY_TIMEOUT,
     FILE_STORAGE_ERROR,
+    UNAUTHORIZED,
+    FORBIDDEN,
     INTERNAL_ERROR
 }

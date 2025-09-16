@@ -1,10 +1,10 @@
 package com.worktrack.config;
 
+import com.worktrack.security.handler.JsonAccessDeniedHandler;
+import com.worktrack.security.handler.JsonAuthenticationEntryPoint;
 import com.worktrack.security.jwt.JwtAuthenticationFilter;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,9 +20,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final JsonAuthenticationEntryPoint jsonAuthenticationEntryPoint;
+    private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,
+                          JsonAuthenticationEntryPoint jsonAuthenticationEntryPoint,
+                          JsonAccessDeniedHandler jsonAccessDeniedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.jsonAuthenticationEntryPoint = jsonAuthenticationEntryPoint;
+        this.jsonAccessDeniedHandler = jsonAccessDeniedHandler;
     }
 
     @Bean
@@ -45,17 +51,9 @@ public class SecurityConfig {
                                 "/layered/api/v1/auth/**")
                         .permitAll()
                         .anyRequest().authenticated()
-                ) .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((req, res, e) -> {
-                            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            res.setContentType(MediaType.APPLICATION_JSON.toString());
-                            res.getWriter().write("{\"error\":\"unauthorized\"}");
-                        })
-                        .accessDeniedHandler((req, res, e) -> {
-                            res.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            res.setContentType(MediaType.APPLICATION_JSON.toString());
-                            res.getWriter().write("{\"error\":\"forbidden\"}");
-                        })
+                ).exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jsonAuthenticationEntryPoint)
+                        .accessDeniedHandler(jsonAccessDeniedHandler)
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

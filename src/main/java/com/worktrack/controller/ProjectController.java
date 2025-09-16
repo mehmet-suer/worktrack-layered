@@ -1,15 +1,14 @@
 package com.worktrack.controller;
 
 import com.worktrack.dto.request.project.CreateProjectRequest;
-import com.worktrack.dto.request.validation.Create;
 import com.worktrack.dto.response.project.ProjectResponse;
 import com.worktrack.service.project.ProjectService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class ProjectController {
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ProjectResponse> createProject(@RequestBody @Validated(Create.class) CreateProjectRequest request) {
+    public ResponseEntity<ProjectResponse> createProject(@Valid @RequestBody CreateProjectRequest request) {
         return ResponseEntity
                 .status(201)
                 .body(projectService.createProject(request));

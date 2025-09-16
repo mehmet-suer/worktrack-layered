@@ -2,9 +2,9 @@ package com.worktrack.controller;
 
 import com.worktrack.dto.request.auth.LoginRequest;
 import com.worktrack.dto.response.LoginResponse;
-import com.worktrack.dto.response.AuthUserInfo;
 import com.worktrack.dto.response.user.UserDto;
 import com.worktrack.service.auth.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +21,14 @@ public class AuthController {
 
     @PreAuthorize("isAnonymous()")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.authenticate(request.username(), request.password());
         return ResponseEntity.ok(response);
     }
 
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> getUserName(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<UserDto> getUserName(@Valid @RequestHeader("Authorization") String authHeader) {
         UserDto userDto = authService.getUserInfoFromToken(authHeader);
         return ResponseEntity.ok(userDto);
     }

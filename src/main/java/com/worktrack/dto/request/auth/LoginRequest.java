@@ -1,2 +1,9 @@
 package com.worktrack.dto.request.auth;
-public record LoginRequest(String username, String password) {}
+
+import jakarta.validation.constraints.Size;
+
+public record LoginRequest(
+        @Size(min = 3, max = 50)
+        String username,
+        @Size(min = 8, max = 50)
+        String password) { }

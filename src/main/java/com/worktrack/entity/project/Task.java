@@ -11,17 +11,17 @@ import jakarta.validation.constraints.Size;
 @Table(name = "task")
 public class Task extends StatusAwareBaseEntity {
 
-    @Column(nullable = false)
     @NotBlank
     @Size(max = 255)
+    @Column(nullable = false)
     private String title;
 
     @Size(max = 255)
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "task_status", nullable = false)
     @Size(max = 50)
+    @Column(name = "task_status", nullable = false)
     private TaskStatus taskStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
