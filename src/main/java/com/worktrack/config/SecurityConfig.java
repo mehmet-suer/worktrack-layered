@@ -5,6 +5,8 @@ import com.worktrack.security.handler.JsonAuthenticationEntryPoint;
 import com.worktrack.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,6 +34,18 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
+    @Profile({"local", "int"})
+    public SecurityFilterChain swaggerWhitelist(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-ui/index.html")
+                .authorizeHttpRequests(a -> a.anyRequest().permitAll())
+                .csrf(AbstractHttpConfigurer::disable)
+                .build();
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)

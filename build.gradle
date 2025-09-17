@@ -34,7 +34,8 @@ dependencies {
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-autoconfigure:2.7.0'
 	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
-
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13"
+    implementation "org.apache.commons:commons-lang3:3.18.0"
 
 	implementation("org.flywaydb:flyway-core:11.8.2")
 	implementation("org.flywaydb:flyway-mysql:11.8.2")

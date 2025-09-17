@@ -22,3 +22,9 @@ file:
 jwt:
    secret: UiZEKSMjY3MjOTRJVl5kRmJyODRqeDVOeHN2c2c0UGY=
    expiration: 86400000
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

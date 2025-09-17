@@ -14,3 +14,9 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

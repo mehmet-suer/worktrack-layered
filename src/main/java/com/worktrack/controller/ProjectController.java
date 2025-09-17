@@ -3,6 +3,7 @@ package com.worktrack.controller;
 import com.worktrack.dto.request.project.CreateProjectRequest;
 import com.worktrack.dto.response.project.ProjectResponse;
 import com.worktrack.service.project.ProjectService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Projects", description = "Project management endpoints")
 @RestController
 @RequestMapping("layered/api/v1/projects")
 public class ProjectController {

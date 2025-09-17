@@ -3,6 +3,7 @@ package com.worktrack.controller;
 import com.worktrack.dto.response.DownloadFileResponse;
 import com.worktrack.dto.response.project.TaskAttachmentResponse;
 import com.worktrack.service.project.TaskAttachmentService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name = "Attachments", description = "Task Attachments management endpoints")
 @RestController
 @RequestMapping("layered/api/v1")
 public class TaskAttachmentController {
