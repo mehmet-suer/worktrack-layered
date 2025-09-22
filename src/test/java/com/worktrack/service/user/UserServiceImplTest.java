@@ -1,14 +1,14 @@
 package com.worktrack.service.user;
 
 
-import com.worktrack.dto.request.auth.UserUpdateRequest;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.request.user.UpdateUserRequest;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.Role;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.exception.user.DuplicateUserException;
-import com.worktrack.mapper.UserDtoMapper;
+import com.worktrack.mapper.UserResponseMapper;
 import com.worktrack.repo.user.UserRepository;
 
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +40,7 @@ public class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
 
     @Spy
-    private UserDtoMapper userDtoMapper = new UserDtoMapper();
+    private UserResponseMapper userResponseMapper = new UserResponseMapper();
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -72,7 +72,7 @@ public class UserServiceImplTest {
             });
 
             // Act
-            UserDto response = userService.register(request);
+            UserResponse response = userService.register(request);
 
             // Assert
             assertEquals(request.username(), response.username());
@@ -86,8 +86,8 @@ public class UserServiceImplTest {
             User capturedUser = userCaptor.getValue();
             assertEquals(request.username(), capturedUser.getUsername());
             assertEquals(encodedPassword, capturedUser.getPassword());
-            verify(userDtoMapper).toDto(any());
-            verifyNoMoreInteractions(userRepository, userDtoMapper);
+            verify(userResponseMapper).toDto(any());
+            verifyNoMoreInteractions(userRepository, userResponseMapper);
         }
 
         @Test
@@ -135,12 +135,12 @@ public class UserServiceImplTest {
         // Arrange
         Long id = 1L;
         var user = UserTestUtils.dummyUserWithId(id);
-        UserUpdateRequest request = UserTestUtils.dummyUpdateRequest();
+        UpdateUserRequest request = UserTestUtils.dummyUpdateRequest();
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(request.password())).thenReturn("encodedPass");
 
         // Act
-        UserDto updatedUser = userService.update(id, request);
+        UserResponse updatedUser = userService.update(id, request);
 
         // Assert
         assertEquals(request.username(), updatedUser.username());
@@ -148,7 +148,7 @@ public class UserServiceImplTest {
         assertEquals(request.fullName(), updatedUser.fullName());
 
         verify(userRepository).findById(id);
-        verify(userDtoMapper).toDto(user);
+        verify(userResponseMapper).toDto(user);
     }
 
     @Test
@@ -156,7 +156,7 @@ public class UserServiceImplTest {
         // Arrange
         Long id = 1L;
 
-        UserUpdateRequest request = UserTestUtils.dummyUpdateRequest();
+        UpdateUserRequest request = UserTestUtils.dummyUpdateRequest();
         when(userRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act
@@ -183,7 +183,7 @@ public class UserServiceImplTest {
         assertEquals(1, users.size());
         assertEquals(user.getRole().name(), users.getFirst().role());
         verify(userRepository).findAll();
-        verify(userDtoMapper).toDto(user);
+        verify(userResponseMapper).toDto(user);
     }
 
     @Test
@@ -200,7 +200,7 @@ public class UserServiceImplTest {
         assertEquals(1, users.size());
         assertEquals(role.name(), users.getFirst().role());
         verify(userRepository).findByRole(role);
-        verify(userDtoMapper).toDto(user);
+        verify(userResponseMapper).toDto(user);
     }
 
 
@@ -212,13 +212,13 @@ public class UserServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         // Act
-        Optional<UserDto> result = userService.findById(1L);
+        Optional<UserResponse> result = userService.findById(1L);
 
         // Assert
         assertTrue(result.isPresent());
         assertEquals(user.getUsername(), result.get().username());
         verify(userRepository).findById(1L);
-        verify(userDtoMapper).toDto(user);
+        verify(userResponseMapper).toDto(user);
     }
 
     @Test
@@ -227,12 +227,12 @@ public class UserServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Act
-        Optional<UserDto> result = userService.findById(1L);
+        Optional<UserResponse> result = userService.findById(1L);
         // Assert
         assertTrue(result.isEmpty());
         verify(userRepository).findById(1L);
-        verify(userDtoMapper, never()).toDto(any());
-        verifyNoInteractions(userDtoMapper);
+        verify(userResponseMapper, never()).toDto(any());
+        verifyNoInteractions(userResponseMapper);
     }
 
     @Test
@@ -248,7 +248,7 @@ public class UserServiceImplTest {
         // Assert
         assertTrue(result.isPresent());
         assertEquals(user.getUsername(), result.get().getUsername());
-        verifyNoInteractions(userDtoMapper);
+        verifyNoInteractions(userResponseMapper);
         verify(userRepository).findByUsername(user.getUsername());
     }
 
@@ -262,7 +262,7 @@ public class UserServiceImplTest {
         // Assert
         assertTrue(result.isEmpty());
         verify(userRepository).findByUsername(any(String.class));
-        verify(userDtoMapper, never()).toDto(any());
+        verify(userResponseMapper, never()).toDto(any());
 
     }
 
@@ -272,7 +272,7 @@ public class UserServiceImplTest {
         var user = UserTestUtils.dummyUserWithId(1L);
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         // Act
-        Optional<UserDto> result = userService.findByEmail(user.getEmail());
+        Optional<UserResponse> result = userService.findByEmail(user.getEmail());
 
         // Assert
         assertTrue(result.isPresent());
@@ -282,7 +282,7 @@ public class UserServiceImplTest {
         assertEquals(user.getRole().name(), result.get().role());
 
         verify(userRepository).findByEmail(user.getEmail());
-        verify(userDtoMapper).toDto(user);
+        verify(userResponseMapper).toDto(user);
     }
 
     @Test
@@ -293,12 +293,12 @@ public class UserServiceImplTest {
         when(userRepository.findByEmail(unknownEmail)).thenReturn(Optional.empty());
 
         // Act
-        Optional<UserDto> result = userService.findByEmail(unknownEmail);
+        Optional<UserResponse> result = userService.findByEmail(unknownEmail);
 
         // Assert
         assertTrue(result.isEmpty());
         verify(userRepository).findByEmail(unknownEmail);
-        verify(userDtoMapper, never()).toDto(any());
+        verify(userResponseMapper, never()).toDto(any());
     }
 
 
@@ -355,13 +355,13 @@ public class UserServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         // Act
-        UserDto result = userService.findByIdForced(1L);
+        UserResponse result = userService.findByIdForced(1L);
 
         // Assert
         assertNotNull(result);
         assertEquals(user.getUsername(), result.username());
         verify(userRepository).findById(1L);
-        verify(userDtoMapper).toDto(user);
+        verify(userResponseMapper).toDto(user);
     }
 
     @Test
@@ -391,7 +391,7 @@ public class UserServiceImplTest {
         assertNotNull(result);
         assertEquals(user.getUsername(), result.getUsername());
         verify(userRepository).findById(1L);
-        verifyNoInteractions(userDtoMapper);
+        verifyNoInteractions(userResponseMapper);
     }
 
     @Test
@@ -442,10 +442,10 @@ public class UserServiceImplTest {
 
 
     @Test
-    void shouldConvertUserEntityToUserDto() {
+    void shouldConvertUserEntityToUserResponse() {
         // Arrange
         User user = UserTestUtils.dummyUserWithId(1L);
-        UserDto userDto = new UserDto(
+        UserResponse userResponse = new UserResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
@@ -454,20 +454,20 @@ public class UserServiceImplTest {
                 user.getCreatedBy(),
                 user.getUpdatedBy()
         );
-        when(userDtoMapper.toDto(user)).thenReturn(userDto);
+        when(userResponseMapper.toDto(user)).thenReturn(userResponse);
         // Act
-        UserDto result = userService.toDto(user);
+        UserResponse result = userService.toDto(user);
 
         // Assert
         assertNotNull(result);
-        assertEquals(userDto.username(), result.username());
-        assertEquals(userDto.email(), result.email());
-        assertEquals(userDto.fullName(), result.fullName());
-        assertEquals(userDto.role(), result.role());
-        assertEquals(userDto.createdBy(), result.createdBy());
-        assertEquals(userDto.updatedBy(), result.updatedBy());
+        assertEquals(userResponse.username(), result.username());
+        assertEquals(userResponse.email(), result.email());
+        assertEquals(userResponse.fullName(), result.fullName());
+        assertEquals(userResponse.role(), result.role());
+        assertEquals(userResponse.createdBy(), result.createdBy());
+        assertEquals(userResponse.updatedBy(), result.updatedBy());
 
-        verify(userDtoMapper).toDto(user);
+        verify(userResponseMapper).toDto(user);
     }
 
     @Test
@@ -475,10 +475,10 @@ public class UserServiceImplTest {
         // Arrange
         User user = null;
         // Act
-        UserDto result = userService.toDto(user);
+        UserResponse result = userService.toDto(user);
 
         // Assert
         assertNull(result);
-        verify(userDtoMapper, never()).toDto(any());
+        verify(userResponseMapper, never()).toDto(any());
     }
 }

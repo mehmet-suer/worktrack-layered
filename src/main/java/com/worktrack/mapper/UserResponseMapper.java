@@ -1,13 +1,13 @@
 package com.worktrack.mapper;
 
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.User;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserDtoMapper {
-    public UserDto toDto(User user) {
-        return new UserDto(
+public class UserResponseMapper {
+    public UserResponse toDto(User user) {
+        return new UserResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),

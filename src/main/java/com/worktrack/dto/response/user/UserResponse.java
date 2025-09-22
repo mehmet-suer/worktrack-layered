@@ -1,7 +1,7 @@
 package com.worktrack.dto.response.user;
 
 
-public record UserDto(
+public record UserResponse(
         Long id,
         String username,
         String email,
@@ -10,7 +10,7 @@ public record UserDto(
         String createdBy,
         String updatedBy
 ) {
-    public UserDto(Long id, String username, String fullName) {
+    public UserResponse(Long id, String username, String fullName) {
         this(id, username, null, fullName, null, null, null);
     }
 

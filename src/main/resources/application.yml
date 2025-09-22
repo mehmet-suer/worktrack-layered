@@ -12,6 +12,13 @@ management:
       enabled: true
 
 spring:
+  jackson:
+    deserialization:
+      READ_UNKNOWN_ENUM_VALUES_AS_NULL: false
+      READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE: false
+    mapper:
+      accept-case-insensitive-enums: true
+
   cloud:
     config:
       enabled: false

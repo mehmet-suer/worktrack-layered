@@ -1,8 +1,7 @@
 package com.worktrack.service.auth;
 
 import com.worktrack.dto.response.LoginResponse;
-import com.worktrack.dto.response.AuthUserInfo;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.User;
 import com.worktrack.exception.auth.InvalidCredentialsException;
 import com.worktrack.security.jwt.JwtService;
@@ -36,7 +35,7 @@ public class AuthServiceImp implements AuthService {
     }
 
     @Override
-    public UserDto getUserInfoFromToken(String authHeader) {
+    public UserResponse getUserInfoFromToken(String authHeader) {
         String token = extractToken(authHeader);
         String username = getUsernameFromToken(token);
         User user = findUser(username);

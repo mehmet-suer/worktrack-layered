@@ -1,8 +1,9 @@
 package com.worktrack.service.user;
 
-import com.worktrack.dto.request.auth.UserRegistrationRequest;
-import com.worktrack.dto.request.auth.UserUpdateRequest;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.request.user.RegisterUserRequest;
+import com.worktrack.dto.request.user.SearchUserRequest;
+import com.worktrack.dto.request.user.UpdateUserRequest;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.Role;
 import com.worktrack.entity.auth.User;
 
@@ -12,19 +13,19 @@ import java.util.Optional;
 public interface UserService {
 
 
-    UserDto register(UserRegistrationRequest request);
+    UserResponse register(RegisterUserRequest request);
 
-    UserDto update(Long id, UserUpdateRequest request);
+    UserResponse update(Long id, UpdateUserRequest request);
 
-    List<UserDto> findAllByRole(Role role);
+    List<UserResponse> findAllByRole(Role role);
 
-    Optional<UserDto> findById(Long id);
+    Optional<UserResponse> findById(Long id);
 
     Optional<User> findByUsername(String username);
 
-    Optional<UserDto> findByEmail(String email);
+    Optional<UserResponse> findByEmail(String email);
 
-    List<UserDto> findAll();
+    List<UserResponse> findAll();
 
     void deleteUser(Long id);
 
@@ -32,9 +33,11 @@ public interface UserService {
 
     boolean existsByEmail(String email);
 
-    UserDto findByIdForced(Long id);
+    UserResponse findByIdForced(Long id);
 
     User findEntityByIdForced(Long id);
 
-    UserDto toDto(User user);
+    UserResponse toDto(User user);
+
+    List<UserResponse> search(SearchUserRequest request);
 }

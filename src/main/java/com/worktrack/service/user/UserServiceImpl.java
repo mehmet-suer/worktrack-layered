@@ -1,22 +1,17 @@
 package com.worktrack.service.user;
 
-import com.worktrack.dto.request.auth.UserRegistrationRequest;
-import com.worktrack.dto.request.auth.UserUpdateRequest;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.request.user.RegisterUserRequest;
+import com.worktrack.dto.request.user.SearchUserRequest;
+import com.worktrack.dto.request.user.UpdateUserRequest;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.Role;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
-import com.worktrack.exception.user.DuplicateUserException;
 import com.worktrack.exception.EntityNotFoundException;
-import com.worktrack.mapper.UserDtoMapper;
-import com.worktrack.repo.specification.GenericSpecificationBuilder;
+import com.worktrack.exception.user.DuplicateUserException;
+import com.worktrack.mapper.UserResponseMapper;
 import com.worktrack.repo.specification.Spec;
 import com.worktrack.repo.user.UserRepository;
-import com.worktrack.repo.user.specification.UserSpecifications;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,26 +31,26 @@ import static com.worktrack.repo.user.specification.UserSpecifications.*;
 public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserDtoMapper userDtoMapper;
+    private final UserResponseMapper userResponseMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           UserDtoMapper userMapper) {
+                           UserResponseMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.userDtoMapper = userMapper;
+        this.userResponseMapper = userMapper;
     }
 
     @Transactional
-    public UserDto register(UserRegistrationRequest request) {
+    public UserResponse register(RegisterUserRequest request) {
         validateRegistrationRequest(request);
         String encodedPassword = getEncodedPassword(request.password());
         var user = new User(request.username(), request.email(), encodedPassword, request.fullName(), request.role());
         userRepository.save(user);
-        return userDtoMapper.toDto(user);
+        return userResponseMapper.toDto(user);
     }
 
-    private void validateRegistrationRequest(UserRegistrationRequest request) {
+    private void validateRegistrationRequest(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new DuplicateUserException("Email already registered");
         }
@@ -69,24 +64,24 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
 
-    public Optional<UserDto> findById(Long id) {
-        return userRepository.findById(id).map(userDtoMapper::toDto);
+    public Optional<UserResponse> findById(Long id) {
+        return userRepository.findById(id).map(userResponseMapper::toDto);
     }
 
     public Optional<User> findByUsername(String username){
         return userRepository.findByUsername(username);
     }
 
-    public Optional<UserDto> findByEmail(String email){
-        return userRepository.findByEmail(email).map(userDtoMapper::toDto);
+    public Optional<UserResponse> findByEmail(String email){
+        return userRepository.findByEmail(email).map(userResponseMapper::toDto);
     }
 
-    public List<UserDto> findAll(){
-        return userRepository.findAll().stream().map(userDtoMapper::toDto).toList();
+    public List<UserResponse> findAll(){
+        return userRepository.findAll().stream().map(userResponseMapper::toDto).toList();
     }
 
-    public List<UserDto> findAllByRole(Role role) {
-        return userRepository.findByRole(role).stream().map(userDtoMapper::toDto).toList();
+    public List<UserResponse> findAllByRole(Role role) {
+        return userRepository.findByRole(role).stream().map(userResponseMapper::toDto).toList();
     }
 
     public boolean existsByUsername(String username) {
@@ -105,8 +100,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
 
-    @Transactional
-    public UserDto update(Long id, UserUpdateRequest request) {
+    public UserResponse update(Long id, UpdateUserRequest request) {
         User user = findEntityByIdForced(id);
 
         if (request.username() != null) {
@@ -123,12 +117,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         // userRepository.save(user);
-        return userDtoMapper.toDto(user);
+        return userResponseMapper.toDto(user);
 
     }
 
     @Override
-    public UserDto findByIdForced(Long id) {
+    public UserResponse findByIdForced(Long id) {
         return this.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
@@ -145,47 +139,23 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
-    public UserDto toDto(@Nullable User user) {
-        return (user != null) ? userDtoMapper.toDto(user) : null;
+    public UserResponse toDto(@Nullable User user) {
+        return (user != null) ? userResponseMapper.toDto(user) : null;
     }
 
 
-    public List<UserDto> searchUsers(String username, Role role, Status status) {
-        Specification<User> spec = Specification
-                .where(usernameContains(username))
-                .and(hasRole(role))
-                .and(hasStatus(status));
-        Specification<User> spec2 = new GenericSpecificationBuilder<User>()
-                .addIfPresent(username, UserSpecifications::usernameContains)
-                .addIfPresent(role, UserSpecifications::hasRole)
-                .addIfPresent(status, UserSpecifications::hasStatus)
-                .build();
+    public List<UserResponse> search(SearchUserRequest request) {
 
-        return userRepository.findAll(spec)
-                .stream()
-                .map(userDtoMapper::toDto)
-                .toList();
-    }
-
-    public List<UserDto> search(String keyword, Role role) {
         Specification<User> spec = Spec.and(
-                new Specification<User>() {
-                    @Override
-                    public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                        return null;
-                    }
-                }
-                ,
-                Spec.or(
-                        Spec.eq("role", Role.EMPLOYEE),
-                        Spec.not(Spec.eq("status", Status.DELETED))
-                )
+                Specification.<User>unrestricted(),
+                fullNameContains(request.fullName()),
+                hasRoles(request.role()),
+                hasEmail(request.email())
         );
 
         return userRepository.findAll(spec)
                 .stream()
-                .map(userDtoMapper::toDto)
+                .map(userResponseMapper::toDto)
                 .toList();
     }
-
 }

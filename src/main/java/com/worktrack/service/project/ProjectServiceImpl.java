@@ -2,7 +2,7 @@ package com.worktrack.service.project;
 
 import com.worktrack.dto.request.project.CreateProjectRequest;
 import com.worktrack.dto.response.project.ProjectResponse;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.entity.project.Project;
@@ -68,7 +68,7 @@ public class ProjectServiceImpl implements ProjectService {
                     var owner = project.getOwner(); // NOTE: This must be done inside the service layer.
                                                     // If accessed in the controller, the session will be closed
                                                     // and a LazyInitializationException will be thrown.
-                    UserDto ownerDto = userService.toDto(owner);
+                    UserResponse ownerDto = userService.toDto(owner);
                     return projectResponseMapper.toDto(project, ownerDto);
                 })
                 .toList();

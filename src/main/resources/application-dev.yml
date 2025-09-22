@@ -3,7 +3,7 @@ spring:
     restart:
       enabled:true
   datasource:
-    url: jdbc:h2:file:./data/worktrack-db;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:/data/worktrack-db;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -14,7 +14,7 @@ spring:
       enabled: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
 file:
   upload-dir: ${java.io.tmpdir}/worktrack-uploads

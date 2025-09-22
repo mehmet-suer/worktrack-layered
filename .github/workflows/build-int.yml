@@ -43,8 +43,8 @@ jobs:
         run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       # ---------- Build & Test ----------
-      - name: Build (unit)
-        run: ./gradlew clean build -x test -Dspring.profiles.active=int --no-daemon
+      - name: Build
+        run: ./gradlew clean build --no-daemon
 
       - name: Run integration tests
         run: ./gradlew :integration-test:test --no-daemon

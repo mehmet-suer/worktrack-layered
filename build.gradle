@@ -28,6 +28,8 @@ dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-web') {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
 	}
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.retry:spring-retry'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-jetty'
 	implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
@@ -53,6 +55,8 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testFixturesImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testFixturesImplementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen:6.6.0.Final'
 }
 
 configurations {
@@ -79,6 +83,10 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+bootJar {
+    archiveFileName = 'app.jar'
 }
 
 jar {

@@ -2,9 +2,9 @@ package com.worktrack.controller;
 
 
 import com.worktrack.config.JsonTestConfig;
-import com.worktrack.dto.request.auth.UserRegistrationRequest;
-import com.worktrack.dto.request.auth.UserUpdateRequest;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.request.user.RegisterUserRequest;
+import com.worktrack.dto.request.user.UpdateUserRequest;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.security.jwt.JwtAuthenticationFilter;
 import com.worktrack.security.jwt.JwtService;
@@ -26,7 +26,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +41,8 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired JsonUtils jsonUtils;
+    @Autowired
+    JsonUtils jsonUtils;
 
     @MockitoBean
     private JwtService jwtService;
@@ -60,10 +60,10 @@ public class UserControllerTest {
         @Test
         @DisplayName("should register user successfully")
         void shouldRegisterUserSuccessfully() throws Exception {
-            UserRegistrationRequest request = UserTestUtils.dummyRegistrationRequest();
-            UserDto expectedUserDto = UserTestUtils.toDtoFrom(request, 1L);
+            RegisterUserRequest request = UserTestUtils.dummyRegistrationRequest();
+            UserResponse expectedUserResponse = UserTestUtils.toDtoFrom(request, 1L);
 
-            when(userService.register(any(UserRegistrationRequest.class))).thenReturn(expectedUserDto);
+            when(userService.register(any(RegisterUserRequest.class))).thenReturn(expectedUserResponse);
             var mvcResult = mockMvc.perform(
                             MockMvcRequestBuilders
                                     .post("/layered/api/v1/users/register")
@@ -73,17 +73,17 @@ public class UserControllerTest {
                     .andExpect(status().isOk())
                     .andReturn();
             String responseBody = mvcResult.getResponse().getContentAsString();
-            UserDto actual = jsonUtils.fromJsonString(responseBody, UserDto.class);
+            UserResponse actual = jsonUtils.fromJsonString(responseBody, UserResponse.class);
 
-            assertEquals(expectedUserDto, actual);
-            verify(userService).register(any(UserRegistrationRequest.class));
+            assertEquals(expectedUserResponse, actual);
+            verify(userService).register(any(RegisterUserRequest.class));
             verifyNoMoreInteractions(userService);
         }
 
         @Test
         @DisplayName("should return 400 when registration request is invalid")
         void shouldReturn400WhenRegisterRequestIsInvalid() throws Exception {
-            UserRegistrationRequest request = UserTestUtils.dummyInvalidRegistrationRequest();
+            RegisterUserRequest request = UserTestUtils.dummyInvalidRegistrationRequest();
 
             mockMvc.perform(
                             MockMvcRequestBuilders
@@ -104,11 +104,11 @@ public class UserControllerTest {
         @Test
         @DisplayName("should update user successfully")
         void shouldUpdateUserSuccessfully() throws Exception {
-            UserUpdateRequest request = UserTestUtils.dummyUpdateRequest();
+            UpdateUserRequest request = UserTestUtils.dummyUpdateRequest();
             var userId = 1L;
-            UserDto expectedUserDto = UserTestUtils.toDtoFrom(request, userId);
+            UserResponse expectedUserResponse = UserTestUtils.toDtoFrom(request, userId);
 
-            when(userService.update(eq(userId), any(UserUpdateRequest.class))).thenReturn(expectedUserDto);
+            when(userService.update(eq(userId), any(UpdateUserRequest.class))).thenReturn(expectedUserResponse);
             var mvcResult = mockMvc.perform(
                             MockMvcRequestBuilders
                                     .put("/layered/api/v1/users/{id}", userId)
@@ -118,20 +118,20 @@ public class UserControllerTest {
                     .andExpect(status().isOk())
                     .andReturn();
             String responseBody = mvcResult.getResponse().getContentAsString();
-            UserDto actual = jsonUtils.fromJsonString(responseBody, UserDto.class);
+            UserResponse actual = jsonUtils.fromJsonString(responseBody, UserResponse.class);
 
-            assertEquals(expectedUserDto, actual);
-            verify(userService).update(eq(userId), any(UserUpdateRequest.class));
+            assertEquals(expectedUserResponse, actual);
+            verify(userService).update(eq(userId), any(UpdateUserRequest.class));
             verifyNoMoreInteractions(userService);
         }
 
         @Test
         @DisplayName("should return 404 when user to update does not exist")
         void shouldReturn404WhenUserToUpdateDoesNotExist() throws Exception {
-            UserUpdateRequest request = UserTestUtils.dummyUpdateRequest();
+            UpdateUserRequest request = UserTestUtils.dummyUpdateRequest();
             var userId = 1L;
 
-            when(userService.update(eq(userId), any(UserUpdateRequest.class))).thenThrow(new EntityNotFoundException("User not found"));
+            when(userService.update(eq(userId), any(UpdateUserRequest.class))).thenThrow(new EntityNotFoundException("User not found"));
 
             mockMvc.perform(
                             MockMvcRequestBuilders
@@ -141,14 +141,14 @@ public class UserControllerTest {
                     )
                     .andExpect(status().isNotFound());
 
-            verify(userService).update(eq(userId), any(UserUpdateRequest.class));
+            verify(userService).update(eq(userId), any(UpdateUserRequest.class));
             verifyNoMoreInteractions(userService);
         }
 
         @Test
         @DisplayName("should return 400 when update request is invalid")
         void shouldReturn400WhenUpdateRequestIsInvalid() throws Exception {
-            UserUpdateRequest request = new UserUpdateRequest("", "invalidEmail", "short", "");
+            UpdateUserRequest request = new UpdateUserRequest("", "invalidEmail", "short", "");
 
             mockMvc.perform(
                             MockMvcRequestBuilders
@@ -168,8 +168,8 @@ public class UserControllerTest {
         @DisplayName("should return all users")
         void shouldReturnAllUsers() throws Exception {
             var userId = 1L;
-            UserDto userDto = UserTestUtils.toDtoFrom(UserTestUtils.dummyRegistrationRequest(), userId);
-            when(userService.findAll()).thenReturn(List.of(userDto));
+            UserResponse userResponse = UserTestUtils.toDtoFrom(UserTestUtils.dummyRegistrationRequest(), userId);
+            when(userService.findAll()).thenReturn(List.of(userResponse));
 
             var mvcResult = mockMvc.perform(
                             MockMvcRequestBuilders
@@ -179,10 +179,10 @@ public class UserControllerTest {
                     .andExpect(status().isOk())
                     .andReturn();
             String responseBody = mvcResult.getResponse().getContentAsString();
-            List<UserDto> actual = jsonUtils.fromJsonArrayString(responseBody, UserDto.class);
+            List<UserResponse> actual = jsonUtils.fromJsonArrayString(responseBody, UserResponse.class);
 
             assertEquals(1, actual.size());
-            assertEquals(userDto, actual.getFirst());
+            assertEquals(userResponse, actual.getFirst());
             verify(userService).findAll();
             verifyNoMoreInteractions(userService);
         }
@@ -196,8 +196,8 @@ public class UserControllerTest {
         @DisplayName("should return user by ID")
         void shouldReturnUserById() throws Exception {
             var userId = 1L;
-            UserDto userDto = UserTestUtils.toDtoFrom(UserTestUtils.dummyRegistrationRequest(), userId);
-            when(userService.findById(eq(userId))).thenReturn(Optional.of(userDto));
+            UserResponse userResponse = UserTestUtils.toDtoFrom(UserTestUtils.dummyRegistrationRequest(), userId);
+            when(userService.findByIdForced(eq(userId))).thenReturn(userResponse);
 
             var mvcResult = mockMvc.perform(
                             MockMvcRequestBuilders
@@ -207,10 +207,10 @@ public class UserControllerTest {
                     .andExpect(status().isOk())
                     .andReturn();
             String responseBody = mvcResult.getResponse().getContentAsString();
-            UserDto actual = jsonUtils.fromJsonString(responseBody, UserDto.class);
+            UserResponse actual = jsonUtils.fromJsonString(responseBody, UserResponse.class);
 
-            assertEquals(userDto, actual);
-            verify(userService).findById(userId);
+            assertEquals(userResponse, actual);
+            verify(userService).findByIdForced(userId);
             verifyNoMoreInteractions(userService);
         }
 
@@ -218,7 +218,7 @@ public class UserControllerTest {
         @DisplayName("should return 404 when user to find by id does not exist")
         void shouldReturn404WhenUserToFindByIdNotExists() throws Exception {
             var userId = 1L;
-            when(userService.findById(eq(userId))).thenReturn(Optional.empty());
+            when(userService.findByIdForced(eq(userId))).thenThrow(new EntityNotFoundException("User not Found"));
 
             mockMvc.perform(
                             MockMvcRequestBuilders
@@ -226,6 +226,7 @@ public class UserControllerTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isNotFound());
+            verify(userService).findByIdForced(userId);
         }
     }
 

@@ -13,20 +13,15 @@ spring:
       enabled: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
-    properties:
-      hibernate:
-        enable_lazy_load_no_trans: true
-    auditing:
-      enabled: true
   cloud:
     config:
       enabled: false
       import-check:
         enabled: false
 file:
-  upload-dir: /Users/mehmetsuer/Desktop/SpringCourse/worktrack/testuploads
+  upload-dir: ${java.io.tmpdir}/worktrack-test-uploads
 
 eureka:
   client:

@@ -1,8 +1,8 @@
 package com.worktrack.util;
 
-import com.worktrack.dto.request.auth.UserRegistrationRequest;
-import com.worktrack.dto.request.auth.UserUpdateRequest;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.request.user.RegisterUserRequest;
+import com.worktrack.dto.request.user.UpdateUserRequest;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.Role;
 import com.worktrack.entity.auth.User;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -30,27 +30,27 @@ public class UserTestUtils {
         return user;
     }
 
-    public static UserDto dummyUserDto() {
-        return new UserDto(1L, "Test Dto", "test.dto@test.com", "Test Dto", "EMPLOYEE", null, null);
+    public static UserResponse dummyUserResponse() {
+        return new UserResponse(1L, "Test Dto", "test.dto@test.com", "Test Dto", "EMPLOYEE", null, null);
     }
 
-    public static UserRegistrationRequest dummyRegistrationRequest() {
+    public static RegisterUserRequest dummyRegistrationRequest() {
         int id = counter.getAndIncrement(); // her çağrıda artan bir sayı üretir
         String username = "user" + id;
         String email = "user" + id + "@example.com";
         String password = "password" + id;
         String fullName = "Test User " + id;
 
-        return new UserRegistrationRequest(username, email, password, fullName, Role.EMPLOYEE);
+        return new RegisterUserRequest(username, email, password, fullName, Role.EMPLOYEE);
     }
 
 
-    public static UserRegistrationRequest dummyInvalidRegistrationRequest() {
-        return new UserRegistrationRequest("", "invalidEmail.test.com", "short", "", Role.EMPLOYEE);
+    public static RegisterUserRequest dummyInvalidRegistrationRequest() {
+        return new RegisterUserRequest("", "invalidEmail.test.com", "short", "", Role.EMPLOYEE);
     }
-    public static UserUpdateRequest dummyUpdateRequest() {
+    public static UpdateUserRequest dummyUpdateRequest() {
         int id = counter.getAndIncrement();
-        return new UserUpdateRequest(
+        return new UpdateUserRequest(
                 "updatedUser" + id,
                 "updated" + id + "@test.com",
                 "updatedPassword" + id,
@@ -69,8 +69,8 @@ public class UserTestUtils {
         );
     }
 
-    public static UserDto toDtoFrom(UserRegistrationRequest request, Long id) {
-        return new UserDto(
+    public static UserResponse toDtoFrom(RegisterUserRequest request, Long id) {
+        return new UserResponse(
                 id,
                 request.username(),
                 request.email(),
@@ -81,8 +81,8 @@ public class UserTestUtils {
         );
     }
 
-    public static UserDto toDtoFrom(UserUpdateRequest request, Long id) {
-        return new UserDto(
+    public static UserResponse toDtoFrom(UpdateUserRequest request, Long id) {
+        return new UserResponse(
                 id,
                 request.username(),
                 request.email(),
@@ -93,9 +93,9 @@ public class UserTestUtils {
         );
     }
 
-    public static UserRegistrationRequest dummyRegisterRequestWithEmail(String email) {
+    public static RegisterUserRequest dummyRegisterRequestWithEmail(String email) {
         int id = counter.incrementAndGet();
-        return new UserRegistrationRequest(
+        return new RegisterUserRequest(
                 "user" + id,
                 email,
                 "Password" + id,
@@ -104,9 +104,9 @@ public class UserTestUtils {
         );
     }
 
-    public static UserRegistrationRequest dummyRegisterRequestWithUsername(String username) {
+    public static RegisterUserRequest dummyRegisterRequestWithUsername(String username) {
         int id = counter.incrementAndGet();
-        return new UserRegistrationRequest(
+        return new RegisterUserRequest(
                 username,
                 "test" + id + "@example.com",
                 "Password" + id,

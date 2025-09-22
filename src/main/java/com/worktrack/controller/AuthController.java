@@ -2,7 +2,7 @@ package com.worktrack.controller;
 
 import com.worktrack.dto.request.auth.LoginRequest;
 import com.worktrack.dto.response.LoginResponse;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,8 +32,8 @@ public class AuthController {
 
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> getUserName(@Valid @RequestHeader("Authorization") String authHeader) {
-        UserDto userDto = authService.getUserInfoFromToken(authHeader);
-        return ResponseEntity.ok(userDto);
+    public ResponseEntity<UserResponse> getUserName(@Valid @RequestHeader("Authorization") String authHeader) {
+        UserResponse userResponse = authService.getUserInfoFromToken(authHeader);
+        return ResponseEntity.ok(userResponse);
     }
 }

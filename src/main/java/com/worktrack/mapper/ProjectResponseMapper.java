@@ -1,13 +1,13 @@
 package com.worktrack.mapper;
 
 import com.worktrack.dto.response.project.ProjectResponse;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.project.Project;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectResponseMapper {
-    public ProjectResponse toDto(Project project, UserDto owner) {
+    public ProjectResponse toDto(Project project, UserResponse owner) {
         return new ProjectResponse(
                 project.getId(),
                 project.getName(),

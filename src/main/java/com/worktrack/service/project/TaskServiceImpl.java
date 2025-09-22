@@ -3,7 +3,7 @@ package com.worktrack.service.project;
 import com.worktrack.dto.request.project.AssignTaskRequest;
 import com.worktrack.dto.request.project.CreateTaskRequest;
 import com.worktrack.dto.response.project.TaskResponse;
-import com.worktrack.dto.response.user.UserDto;
+import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.entity.project.Project;
@@ -122,7 +122,7 @@ public class TaskServiceImpl implements TaskService {
 
 
     private TaskResponse toResponse(Task task) {
-        UserDto userDto = (task.getAssignedTo() != null)
+        UserResponse userResponse = (task.getAssignedTo() != null)
                 ? userService.toDto(task.getAssignedTo())
                 : null;
 
@@ -131,7 +131,7 @@ public class TaskServiceImpl implements TaskService {
                 task.getTitle(),
                 task.getDescription(),
                 task.getTaskStatus(),
-                userDto
+                userResponse
         );
     }
 }

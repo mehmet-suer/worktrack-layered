@@ -1,9 +1,9 @@
-package com.worktrack.dto.request.auth;
+package com.worktrack.dto.request.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
-public record UserUpdateRequest(
+public record UpdateUserRequest(
 
         @Size(min = 3, max = 50)
         String username,

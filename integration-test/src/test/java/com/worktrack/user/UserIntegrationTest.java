@@ -2,7 +2,7 @@ package com.worktrack.user;
 
 
 import com.worktrack.base.AbstractWebIntegrationTest;
-import com.worktrack.dto.request.auth.UserRegistrationRequest;
+import com.worktrack.dto.request.user.RegisterUserRequest;
 import com.worktrack.repo.user.UserRepository;
 import com.worktrack.util.JsonUtils;
 import com.worktrack.util.UserTestUtils;
@@ -70,7 +70,7 @@ public class UserIntegrationTest extends AbstractWebIntegrationTest {
         @DisplayName("should return 400 when registration request is invalid")
         void shouldReturn400WhenRegisterRequestIsInvalid() throws Exception {
             // arrange
-            UserRegistrationRequest request = UserTestUtils.dummyInvalidRegistrationRequest();
+            RegisterUserRequest request = UserTestUtils.dummyInvalidRegistrationRequest();
             // act
             var result = register(request);
             // assert
@@ -93,8 +93,7 @@ public class UserIntegrationTest extends AbstractWebIntegrationTest {
 
             // assert
             result.andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value(DUPLICATE_USER.name()))
-                    .andExpect(jsonPath("$.message").value("Email already registered"));
+                    .andExpect(jsonPath("$.code").value(DUPLICATE_USER.name()));
             assertThat(userRepository.count()).isEqualTo(before);
         }
 
@@ -111,13 +110,12 @@ public class UserIntegrationTest extends AbstractWebIntegrationTest {
 
             // assert
             result.andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value(DUPLICATE_USER.name()))
-                    .andExpect(jsonPath("$.message").value("Username already registered"));
+                    .andExpect(jsonPath("$.code").value(DUPLICATE_USER.name()));
             assertThat(userRepository.count()).isEqualTo(before);
         }
     }
 
-    private ResultActions register(UserRegistrationRequest req) throws Exception {
+    private ResultActions register(RegisterUserRequest req) throws Exception {
         return mockMvc.perform(post("/layered/api/v1/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)

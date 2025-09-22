@@ -1,86 +1,80 @@
 package com.worktrack.repo.specification;
 
+import jakarta.persistence.metamodel.SingularAttribute;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
 public class Spec {
 
-    private Spec() {}
+    private Spec() {
+    }
 
     @SafeVarargs
     public static <T> Specification<T> and(Specification<T>... specs) {
-        return Arrays.stream(specs)
-                .filter(Objects::nonNull)
-                .reduce(Specification::and)
-                .orElse(null);
+        return combine(Specification::and, specs);
     }
 
     @SafeVarargs
     public static <T> Specification<T> or(Specification<T>... specs) {
-        return Arrays.stream(specs)
-                .filter(Objects::nonNull)
-                .reduce(Specification::or)
-                .orElse(null);
+        return combine(Specification::or, specs);
     }
 
-    public static <T> Specification<T> in(String field, List<?> values) {
+    public static <T, Y> Specification<T> in(SingularAttribute<? super T, Y> attr, List<? extends Y> values) {
+        return (root, q, cb) -> (values == null || values.isEmpty())
+                ? cb.conjunction()
+                : root.get(attr).in(values);
+    }
+
+    public static <T, Y> Specification<T> eq(SingularAttribute<? super T, Y> attr, Y value) {
+        return (root, q, cb) -> value == null ? cb.conjunction() : cb.equal(root.get(attr), value);
+    }
+
+
+    public static <T> Specification<T> containsEscaped(SingularAttribute<? super T, String> attr, String value) {
         return (root, query, cb) -> {
-            if (values == null || values.isEmpty()) {
+            if (value == null || value.isBlank()) {
                 return cb.conjunction();
             }
-            return root.get(field).in(values);
+            String escaped = escapeForLike(value);
+            String pattern = "%" + escaped.toLowerCase(Locale.ROOT) + "%";
+            return cb.like(cb.lower(root.get(attr)), pattern, '\\');
         };
     }
 
-    public static <T> Specification<T> eq(String field, Object value) {
+    public static <T> Specification<T> containsRaw(SingularAttribute<? super T, String> attr, String value) {
         return (root, query, cb) -> {
-            if (value == null) {
+            if (value == null || value.isBlank()) {
                 return cb.conjunction();
             }
-            return cb.equal(root.get(field), value);
+            String pattern = "%" + value.toLowerCase(Locale.ROOT) + "%";
+            return cb.like(cb.lower(root.get(attr)), pattern);
         };
     }
-
-    public static <T> Specification<T> contains(String field, Object value) {
-        return (root, query, cb) -> {
-            if (value == null) {
-                return cb.conjunction();
-            }
-            return cb.like(cb.lower(root.get(field)), "%" + value + "%");
-        };
-    }
-
-
-    @SafeVarargs
-    private static <T> Specification<T> andWithCombine(Specification<T> ...specs) {
-        return combine(Specification::and, specs);
-    }
-
-
-    @SafeVarargs
-    private static <T> Specification<T> combine(BiFunction<Specification<T>, Specification<T>, Specification<T>> combiner,
-                                                Specification<T>... specs) {
-        return Arrays.stream(specs)
-                .filter(Objects::nonNull)
-                .reduce(combiner::apply)
-                .orElse(null);
-    }
-
 
     public static <T> Specification<T> not(Specification<T> spec) {
-        return (root, query, cb) -> cb.not(spec.toPredicate(root, query, cb));
+        return (root, q, cb) -> (spec == null) ? cb.conjunction() : cb.not(spec.toPredicate(root, q, cb));
     }
 
-    public static <T> Specification<T> orTwo(Specification<T> spec1, Specification<T> spec2) {
-        return spec1.or(spec2);
+    @SafeVarargs
+    private static <T> Specification<T> combine(
+            BiFunction<Specification<T>, Specification<T>, Specification<T>> combiner,
+            Specification<T>... specs) {
+
+        Specification<T> base = Specification.unrestricted();
+        return Arrays.stream(specs)
+                .filter(Objects::nonNull).reduce(base, combiner::apply);
     }
 
-    public static <T> Specification<T> andTwo(Specification<T> spec1, Specification<T> spec2) {
-        return spec1.and(spec2);
+    private static String escapeForLike(String input) {
+        return input
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
     }
 
 }
