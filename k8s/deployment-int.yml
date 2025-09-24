@@ -50,11 +50,17 @@ spec:
                   key: JWT_SECRET
           resources:
             requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
               cpu: "500m"
-              memory: "1Gi"
+              memory: "768Mi"
+            limits:
+              cpu: "1G"
+              memory: "1.5Gi"
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8000
+            periodSeconds: 5
+            failureThreshold: 60
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
@@ -76,9 +82,9 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/bin/sh","-c","sleep 5"]
+                command: [ "/bin/sh","-c","sleep 5" ]
         - name: cloud-sql-proxy
-          image:  gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.10.1
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.10.1
           args:
             - "--structured-logs"
             - "--address=0.0.0.0"
@@ -96,16 +102,23 @@ spec:
             limits:
               cpu: "200m"
               memory: "256Mi"
+          startupProbe:
+            tcpSocket:
+              port: 3306
+            periodSeconds: 2
+            failureThreshold: 60
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
             tcpSocket:
               port: 3306
             initialDelaySeconds: 20
             periodSeconds: 20
-          readinessProbe:
-            tcpSocket:
-              port: 3306
-            initialDelaySeconds: 20
-            periodSeconds: 10
+            failureThreshold: 3
           securityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
