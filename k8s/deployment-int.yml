@@ -53,7 +53,7 @@ spec:
               cpu: "500m"
               memory: "768Mi"
             limits:
-              cpu: "1G"
+              cpu: "1"
               memory: "1.5Gi"
           startupProbe:
             httpGet:
