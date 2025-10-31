@@ -35,11 +35,7 @@ public class TaskAttachmentServiceImpl implements TaskAttachmentService {
     public void uploadAttachment(Long taskId, MultipartFile file) {
         Task task = taskService.findEntityByIdForced(taskId);
         String storedPath = fileStorageService.storeFile(file);
-
-        TaskAttachment attachment = new TaskAttachment();
-        attachment.setTask(task);
-        attachment.setFileName(file.getOriginalFilename());
-        attachment.setFilePath(storedPath);
+        TaskAttachment attachment = new TaskAttachment(file.getOriginalFilename(),storedPath, task );
         attachmentRepository.save(attachment);
     }
 

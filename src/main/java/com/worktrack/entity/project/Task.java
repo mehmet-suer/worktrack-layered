@@ -1,7 +1,6 @@
 package com.worktrack.entity.project;
 
 import com.worktrack.entity.auth.User;
-import com.worktrack.entity.base.Status;
 import com.worktrack.entity.base.StatusAwareBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -59,40 +58,23 @@ public class Task extends StatusAwareBaseEntity {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-
     public TaskStatus getTaskStatus() {
         return taskStatus;
-    }
-
-    public void setTaskStatus(TaskStatus taskStatus) {
-        this.taskStatus = taskStatus;
     }
 
     public Project getProject() {
         return project;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public User getAssignedTo() {
         return assignedTo;
     }
 
-    public void setAssignedTo(User assignedTo) {
+    public void assignTo(User assignedTo) {
         this.assignedTo = assignedTo;
     }
 

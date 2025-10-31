@@ -25,7 +25,7 @@ done
 
 
 if [ "$START_OBSERVABILITY" = true ]; then
-  echo "📊 Starting observability stack..."
+  echo "Starting observability stack..."
   mkdir -p "$DATA_DIR"/{grafana-data,prometheus-data,tempo-data,loki-data}
   export OBSERVABILITY_DATA="$DATA_DIR"
 
@@ -42,7 +42,7 @@ if [ "$START_OBSERVABILITY" = true ]; then
   export OTEL_LOGS_EXPORTER=none
   export OTEL_METRICS_EXPORTER=none
 else
-  echo "✅ Skipping observability stack."
+  echo " Skipping observability stack."
   export OTEL_SDK_DISABLED=true
 fi
 

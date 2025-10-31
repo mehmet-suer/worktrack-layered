@@ -35,23 +35,11 @@ public class TaskAttachment extends AuditableBaseEntity {
         return fileName;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
     public String getFilePath() {
         return filePath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
     public Task getTask() {
         return task;
-    }
-
-    public void setTask(Task task) {
-        this.task = task;
     }
 }

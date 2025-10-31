@@ -68,7 +68,7 @@ public class TaskServiceImpl implements TaskService {
         hibernateFilterManager.enableNotDeletedFilter();
         Task task = findByIdAndProjectIdForced(taskId, projectId);
         User user = userService.findEntityByIdForced(request.userId());
-        task.setAssignedTo(user);
+        task.assignTo(user);
 
         taskRepository.save(task);
         publishAssignmentEvents(task);
