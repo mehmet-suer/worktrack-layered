@@ -17,9 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import com.worktrack.util.UserTestUtils;
 
@@ -42,6 +44,9 @@ public class UserServiceImplTest {
     @Spy
     private UserResponseMapper userResponseMapper = new UserResponseMapper();
 
+    @Mock
+    private CacheManager cacheManager;
+
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -52,7 +57,7 @@ public class UserServiceImplTest {
 
 
     @Nested
-    @DisplayName("register() metodu")
+    @DisplayName("register() method")
     class RegisterTests {
 
         @Test
@@ -81,7 +86,7 @@ public class UserServiceImplTest {
             assertEquals(request.role().name(), response.role());
             assertEquals(1L, response.id());
 
-            // verify ile davranış testi
+            // verify
             verify(userRepository).save(userCaptor.capture());
             User capturedUser = userCaptor.getValue();
             assertEquals(request.username(), capturedUser.getUsername());

@@ -16,6 +16,13 @@ spring:
     config:
       import-check:
         enabled: false
+
+  cache:
+    type: redis
+    redis:
+      host: localhost
+      port: 6379
+
 jwt:
   secret: ${jwt.secret}
   expiration: 86400000
@@ -52,3 +59,5 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+cache.enabled: true

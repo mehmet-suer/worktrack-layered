@@ -44,7 +44,7 @@ public class ProjectController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    @PostAuthorize("returnObject == null || returnObject.ownerUsername == authentication.name")
+    @PostAuthorize("true")
     @GetMapping("/{id}")
     public ResponseEntity<ProjectResponse> getProject(Long id) {
         return ResponseEntity.ok(projectService.getProjectById(id));

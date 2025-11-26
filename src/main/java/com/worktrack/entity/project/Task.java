@@ -19,7 +19,6 @@ public class Task extends StatusAwareBaseEntity {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Size(max = 50)
     @Column(name = "task_status", nullable = false)
     private TaskStatus taskStatus;
 

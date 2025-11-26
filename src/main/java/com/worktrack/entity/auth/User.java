@@ -1,5 +1,6 @@
 package com.worktrack.entity.auth;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.worktrack.entity.base.AuditableBaseEntity;
 import com.worktrack.entity.project.Project;
 import jakarta.persistence.*;
@@ -40,10 +41,6 @@ public class User extends AuditableBaseEntity implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
-
-    @OneToMany(mappedBy = "owner")
-    private List<Project> projects;
-
     public User() {}
 
     public User(String username, String email, String password, String fullName, Role role) {
@@ -76,6 +73,7 @@ public class User extends AuditableBaseEntity implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(() -> "ROLE_" + role.name());
     }

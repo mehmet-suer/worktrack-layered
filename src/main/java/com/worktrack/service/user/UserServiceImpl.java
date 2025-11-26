@@ -9,9 +9,12 @@ import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.exception.user.DuplicateUserException;
+import com.worktrack.infra.cache.CacheNames;
 import com.worktrack.mapper.UserResponseMapper;
 import com.worktrack.repo.specification.Spec;
 import com.worktrack.repo.user.UserRepository;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,13 +35,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserResponseMapper userResponseMapper;
+    private final CacheManager cacheManager;
 
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           UserResponseMapper userMapper) {
+                           UserResponseMapper userMapper, CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userResponseMapper = userMapper;
+        this.cacheManager = cacheManager;
     }
 
     @Transactional
@@ -68,15 +73,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository.findById(id).map(userResponseMapper::toDto);
     }
 
-    public Optional<User> findByUsername(String username){
+    @Cacheable(cacheNames = CacheNames.USERS_BY_USERNAME,
+            key = "#username",
+            unless = "#result == null")
+    public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-    public Optional<UserResponse> findByEmail(String email){
+    public Optional<UserResponse> findByEmail(String email) {
         return userRepository.findByEmail(email).map(userResponseMapper::toDto);
     }
 
-    public List<UserResponse> findAll(){
+    public List<UserResponse> findAll() {
         return userRepository.findAll().stream().map(userResponseMapper::toDto).toList();
     }
 
@@ -93,10 +101,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Transactional
-    public void deleteUser(Long id){
+    public void deleteUser(Long id) {
         User user = findEntityByIdForced(id);
         user.setStatus(Status.DELETED);
+        String username = user.getUsername();
+
+        clearUserCache(username);
         userRepository.save(user);
+    }
+
+    private void clearUserCache(String username) {
+        var byUsername = cacheManager.getCache(CacheNames.USERS_BY_USERNAME);
+        if (byUsername != null) byUsername.evict(username);
     }
 
 
@@ -116,7 +132,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             user.setFullName(request.fullName());
         }
 
-        // userRepository.save(user);
+        userRepository.save(user);
+        clearUserCache(user.getUsername());
         return userResponseMapper.toDto(user);
 
     }
@@ -135,6 +152,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("================================================================== cagrildi.");
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
