@@ -19,8 +19,6 @@ public interface UserService {
 
     List<UserResponse> findAllByRole(Role role);
 
-    Optional<UserResponse> findById(Long id);
-
     Optional<User> findByUsername(String username);
 
     Optional<UserResponse> findByEmail(String email);

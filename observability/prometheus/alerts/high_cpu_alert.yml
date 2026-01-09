@@ -2,6 +2,7 @@ groups:
   - name: worktrack_alerts
     rules:
       - alert: WorktrackHighCPU
+        # Demo/test alert: this condition is intentionally set
         expr: process_cpu_seconds_total > 0
         for: 10s
         labels:

@@ -9,6 +9,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -41,27 +43,20 @@ public class JwtServiceImpl implements JwtService {
         return new GeneratedToken(token, TokenType.BEARER, System.currentTimeMillis() + jwtProperties.expiration());
     }
 
-    @Override
-    public boolean isTokenValid(String token, User user) {
-        final String username = extractUsername(token);
-        return username.equals(user.getUsername()) && !isTokenExpired(token);
-    }
-
-    @Override
     public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
+        try {
+            return validateToken(token).getSubject();
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            throw new CredentialsExpiredException("token expired", e);
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+            throw new BadCredentialsException("token invalid", e);
+        }
     }
 
-    public String extractRole(String token) {
-        return (String) extractAllClaims(token).get("role");
-    }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractAllClaims(token).getExpiration();
+    @Override
+    public Claims validateToken(String token) {
+        return extractAllClaims(token);
     }
 
 

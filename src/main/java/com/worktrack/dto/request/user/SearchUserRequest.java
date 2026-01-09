@@ -7,6 +7,5 @@ public record SearchUserRequest(
         @Email
         String email,
         String fullName,
-        Role role
-) {
+        Role role) {
 }

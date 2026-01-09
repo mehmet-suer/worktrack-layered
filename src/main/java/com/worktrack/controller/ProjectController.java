@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,14 +43,14 @@ public class ProjectController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    @PostAuthorize("true")
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectResponse> getProject(Long id) {
+    public ResponseEntity<ProjectResponse> getProject(@PathVariable("id") Long id) {
         return ResponseEntity.ok(projectService.getProjectById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void>  deleteProject(Long id) {
+    public ResponseEntity<Void>  deleteProject(@PathVariable("id") Long id) {
+        projectService.deleteProject(id);
         return ResponseEntity
                 .noContent()
                 .build();

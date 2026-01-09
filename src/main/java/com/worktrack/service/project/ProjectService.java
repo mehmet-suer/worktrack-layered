@@ -21,6 +21,7 @@ public interface ProjectService {
     Page<ProjectResponse> getAllProjects(Pageable pageable);
 
     Optional<Project> findById(Long id);
+
     Project findByIdForced(Long id);
 
 }

@@ -26,16 +26,11 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
 ### VS Code ###
 .vscode/
 /integration-test/logs/
 /integration-test/data/
 /uploads/
 /data/
+.metals/
+.DS_Store

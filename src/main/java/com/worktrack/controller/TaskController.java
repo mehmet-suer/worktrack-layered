@@ -1,5 +1,8 @@
 package com.worktrack.controller;
 
+import com.worktrack.common.id.ProjectId;
+import com.worktrack.common.id.ProjectTaskKey;
+import com.worktrack.common.id.TaskId;
 import com.worktrack.dto.request.project.AssignTaskRequest;
 import com.worktrack.dto.request.project.CreateTaskRequest;
 import com.worktrack.dto.response.project.TaskResponse;
@@ -35,19 +38,21 @@ public class TaskController {
             @PathVariable("projectId") Long projectId,
             @PathVariable("taskId") Long taskId,
             @Valid @RequestBody AssignTaskRequest request) {
-        TaskResponse response = taskService.assignTask(projectId, taskId, request);
+        var projectTaskKey = new ProjectTaskKey( new ProjectId(projectId), new TaskId(taskId));
+        TaskResponse response = taskService.assignTask(projectTaskKey, request);
         return ResponseEntity.ok(response);
     }
 
 
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getTasks(@PathVariable Long projectId) {
+    public ResponseEntity<List<TaskResponse>> getTasks(@PathVariable("projectId") Long projectId) {
         return ResponseEntity.ok(taskService.getTasksByProject(projectId));
     }
 
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
-        taskService.deleteTask(taskId);
+    public ResponseEntity<Void> deleteTask(@PathVariable("projectId") Long projectId, @PathVariable("taskId") Long taskId) {
+        var projectTaskKey = new ProjectTaskKey( new ProjectId(projectId), new TaskId(taskId));
+        taskService.deleteTask(projectTaskKey);
         return ResponseEntity.noContent().build();
     }
 

@@ -14,6 +14,7 @@ public class MessageController {
     private String message;
 
     @GetMapping("/message")
+    // Demo endpoint for dynamic config loading via refresh scope.
     public String getMessage() {
         return message;
     }

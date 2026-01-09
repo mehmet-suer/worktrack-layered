@@ -1,5 +1,6 @@
 package com.worktrack.service.project;
 
+import com.worktrack.common.id.ProjectTaskKey;
 import com.worktrack.dto.request.project.AssignTaskRequest;
 import com.worktrack.dto.request.project.CreateTaskRequest;
 import com.worktrack.dto.response.project.TaskResponse;
@@ -53,7 +54,6 @@ public class TaskServiceImpl implements TaskService {
         User assignedTo = userService.findEntityByIdForced(request.assignedTo());
         Task task = new Task(request.title(), request.description(), project, assignedTo);
         taskRepository.save(task);
-       //  taskNotificationEventPublisher.publishTaskCreated(task);
         return task;
     }
 
@@ -64,30 +64,24 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Transactional
-    public TaskResponse assignTask(Long projectId, Long taskId, AssignTaskRequest request) {
+    public TaskResponse assignTask(ProjectTaskKey projectTaskKey, AssignTaskRequest request) {
         hibernateFilterManager.enableNotDeletedFilter();
-        Task task = findByIdAndProjectIdForced(taskId, projectId);
+        Task task = findByIdAndProjectIdForced(projectTaskKey);
         User user = userService.findEntityByIdForced(request.userId());
         task.assignTo(user);
 
         taskRepository.save(task);
-        publishAssignmentEvents(task);
         return toResponse(task);
     }
 
-    private void publishAssignmentEvents(Task task) {
-        // taskNotificationEventPublisher.publishTaskAssigned(task);
-        // taskAuditEventPublisher.publishTaskAssigned(task);
-    }
-
-    private Task findByIdForced(Long taskId,Long projectId) {
-        return taskRepository.findById(taskId)
-                .orElseThrow(() -> new EntityNotFoundException("Task with " + taskId + " not found"));
-    }
-
-    private Task findByIdAndProjectIdForced(Long taskId,Long projectId) {
-        return taskRepository.findByIdAndProjectId(taskId, projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Task with " + taskId + " and ProjectId " + projectId + " not found"));
+    @Override
+    @Transactional(readOnly = true)
+    public Task findByIdAndProjectIdForced(ProjectTaskKey projectTaskKey) {
+        return taskRepository.findByIdAndProjectId(projectTaskKey.taskId().value(), projectTaskKey.projectId().value(), Status.DELETED)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Task with " + projectTaskKey.taskId().value() +
+                                " and ProjectId " + projectTaskKey.projectId().value() + " not found")
+                );
     }
 
 
@@ -100,25 +94,13 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Transactional
-    public void deleteTask(Long taskId) {
-        Task task = findEntityByIdForced(taskId);
+    public void deleteTask(ProjectTaskKey projectTaskKey) {
+        Task task = findByIdAndProjectIdForced(projectTaskKey);
         task.setStatus(Status.DELETED);
         taskRepository.save(task);  // NOTE: Due to Hibernate dirty checking, calling save() here is not required.
                                     // The entity will be automatically updated when the transaction is committed.
-        publishDeleteEventIfNeeded(task);
     }
 
-    private void publishDeleteEventIfNeeded(Task task) {
-        if (task.getAssignedTo() != null) {
-            // taskNotificationEventPublisher.publishTaskDeleted(task);
-        }
-    }
-
-    @Override
-    public Task findEntityByIdForced(Long taskId) {
-        return taskRepository.findById(taskId)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found"));
-    }
 
 
     private TaskResponse toResponse(Task task) {

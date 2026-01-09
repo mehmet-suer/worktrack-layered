@@ -5,8 +5,6 @@ import com.worktrack.security.util.SecurityUtils;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -17,7 +15,7 @@ public class AuthorizationAspect {
         var auth = SecurityUtils.getAuthenticationForced();
 
         boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ " + Role.ADMIN.name()));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_" + Role.ADMIN.name()));
 
         if (!isAdmin) {
             throw new AccessDeniedException("You are either not authenticated or do not have the required permissions");

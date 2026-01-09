@@ -1,6 +1,40 @@
 package com.worktrack.service.user;
 
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.worktrack.dto.request.user.UpdateUserRequest;
 import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.Role;
@@ -10,27 +44,7 @@ import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.exception.user.DuplicateUserException;
 import com.worktrack.mapper.UserResponseMapper;
 import com.worktrack.repo.user.UserRepository;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.CacheManager;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 import com.worktrack.util.UserTestUtils;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceImplTest {
@@ -141,7 +155,8 @@ public class UserServiceImplTest {
         Long id = 1L;
         var user = UserTestUtils.dummyUserWithId(id);
         UpdateUserRequest request = UserTestUtils.dummyUpdateRequest();
-        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+        Status deletedStatus = Status.DELETED;
+        when(userRepository.findByIdAndStatusNot(id, deletedStatus)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(request.password())).thenReturn("encodedPass");
 
         // Act
@@ -152,7 +167,7 @@ public class UserServiceImplTest {
         assertEquals(request.email(), updatedUser.email());
         assertEquals(request.fullName(), updatedUser.fullName());
 
-        verify(userRepository).findById(id);
+        verify(userRepository).findByIdAndStatusNot(id, deletedStatus);
         verify(userResponseMapper).toDto(user);
     }
 
@@ -162,7 +177,7 @@ public class UserServiceImplTest {
         Long id = 1L;
 
         UpdateUserRequest request = UserTestUtils.dummyUpdateRequest();
-        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        when(userRepository.findByIdAndStatusNot(id, Status.DELETED)).thenReturn(Optional.empty());
 
         // Act
         EntityNotFoundException exception = assertThrowsExactly(EntityNotFoundException.class,
@@ -170,7 +185,7 @@ public class UserServiceImplTest {
         );
         // Assert
         assertEquals("User not found", exception.getMessage());
-        verify(userRepository).findById(id);
+        verify(userRepository).findByIdAndStatusNot(id, Status.DELETED);
         verify(userRepository, never()).save(any());
     }
 
@@ -208,37 +223,6 @@ public class UserServiceImplTest {
         verify(userResponseMapper).toDto(user);
     }
 
-
-
-    @Test
-    void shouldReturnUserById() {
-        // Arrange
-        User user = UserTestUtils.dummyUserWithId(1L);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        // Act
-        Optional<UserResponse> result = userService.findById(1L);
-
-        // Assert
-        assertTrue(result.isPresent());
-        assertEquals(user.getUsername(), result.get().username());
-        verify(userRepository).findById(1L);
-        verify(userResponseMapper).toDto(user);
-    }
-
-    @Test
-    void shouldReturnEmptyIfUserIdNotFound() {
-        // Arrange
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
-
-        // Act
-        Optional<UserResponse> result = userService.findById(1L);
-        // Assert
-        assertTrue(result.isEmpty());
-        verify(userRepository).findById(1L);
-        verify(userResponseMapper, never()).toDto(any());
-        verifyNoInteractions(userResponseMapper);
-    }
 
     @Test
     void shouldReturnUserWhenFoundByUsername() {
@@ -314,7 +298,7 @@ public class UserServiceImplTest {
         // Arrange
         var user = UserTestUtils.dummyUserWithId(1L);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdAndStatusNot(1L, Status.DELETED)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -387,22 +371,23 @@ public class UserServiceImplTest {
     @Test
     void shouldReturnEntityWhenFoundByIdForced() {
         User user = UserTestUtils.dummyUserWithId(1L);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        Status deletedStatus = Status.DELETED;
+        when(userRepository.findByIdAndStatusNot(1L, deletedStatus)).thenReturn(Optional.of(user));
 
         // Act
         User result = userService.findEntityByIdForced(1L);
 
         // Assert
         assertNotNull(result);
-        assertEquals(user.getUsername(), result.getUsername());
-        verify(userRepository).findById(1L);
+        assertSame(user, result);
+        verify(userRepository).findByIdAndStatusNot(1L, deletedStatus);
         verifyNoInteractions(userResponseMapper);
     }
 
     @Test
     void shouldThrowIfUserDoesNotExistOnForcedLookup() {
         // Arrange
-        when(userRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+        when(userRepository.findByIdAndStatusNot(any(Long.class), eq(Status.DELETED))).thenReturn(Optional.empty());
 
         // Act
         EntityNotFoundException ex = assertThrowsExactly(

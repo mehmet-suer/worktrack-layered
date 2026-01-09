@@ -50,8 +50,8 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .sessionManagement(s -> s
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(sessionManagementConfigurer ->
+                        sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
@@ -65,9 +65,11 @@ public class SecurityConfig {
                                 "/layered/api/v1/auth/**")
                         .permitAll()
                         .anyRequest().authenticated()
-                ).exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(jsonAuthenticationEntryPoint)
-                        .accessDeniedHandler(jsonAccessDeniedHandler)
+                ).exceptionHandling(exceptionHandlingConfigurer ->
+                        exceptionHandlingConfigurer
+                                .authenticationEntryPoint(jsonAuthenticationEntryPoint)
+                                .accessDeniedHandler(jsonAccessDeniedHandler)
+
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

@@ -3,11 +3,9 @@ package com.worktrack.repo.specification;
 import jakarta.persistence.metamodel.SingularAttribute;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class Spec {
 
@@ -34,7 +32,6 @@ public class Spec {
         return (root, q, cb) -> value == null ? cb.conjunction() : cb.equal(root.get(attr), value);
     }
 
-
     public static <T> Specification<T> containsEscaped(SingularAttribute<? super T, String> attr, String value) {
         return (root, query, cb) -> {
             if (value == null || value.isBlank()) {
@@ -58,6 +55,14 @@ public class Spec {
 
     public static <T> Specification<T> not(Specification<T> spec) {
         return (root, q, cb) -> (spec == null) ? cb.conjunction() : cb.not(spec.toPredicate(root, q, cb));
+    }
+
+    public static <T, V> Specification<T> whenNotNull(V value, Function<V, Specification<T>> func) {
+        return Optional.ofNullable(value).map(func).orElseGet(Specification::<T>unrestricted);
+    }
+
+    public static <T> Specification<T> whenNotBlank(String value, Function<String, Specification<T>> func) {
+        return Optional.ofNullable(value).filter(v -> !v.isBlank()).map(func).orElseGet(Specification::<T>unrestricted);
     }
 
     @SafeVarargs

@@ -7,6 +7,8 @@ import jakarta.servlet.http.*;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -24,10 +26,14 @@ public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest req, HttpServletResponse res, AuthenticationException ex)
             throws java.io.IOException {
+        String message = "unauthorized";
+        if (ex instanceof BadCredentialsException || ex instanceof CredentialsExpiredException) {
+            message = ex.getMessage();
+        }
         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         res.setContentType(MediaType.APPLICATION_JSON_VALUE);
         res.setCharacterEncoding(StandardCharsets.UTF_8.name());
         res.setHeader(HttpHeaders.CACHE_CONTROL, CacheControl.noStore().getHeaderValue());
-        mapper.writeValue(res.getWriter(), new ErrorResponse(ErrorCode.UNAUTHORIZED, "unauthorized"));
+        mapper.writeValue(res.getWriter(), new ErrorResponse(ErrorCode.UNAUTHORIZED, message));
     }
 }

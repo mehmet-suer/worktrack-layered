@@ -25,10 +25,10 @@ public class AuthServiceImp implements AuthService {
 
     public LoginResponse authenticate(String username, String password) {
         User user = userService.findByUsername(username)
-                .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new InvalidCredentialsException("Invalid password");
+            throw new InvalidCredentialsException("Invalid username or password");
         }
         var generateToken = jwtService.generateToken(user);
         return new LoginResponse(generateToken.token(), generateToken.type(), generateToken.expiresAt());
@@ -39,7 +39,6 @@ public class AuthServiceImp implements AuthService {
         String token = extractToken(authHeader);
         String username = getUsernameFromToken(token);
         User user = findUser(username);
-        validateToken(token, user);
         return userService.toDto(user);
     }
 
@@ -64,12 +63,4 @@ public class AuthServiceImp implements AuthService {
                 .orElseThrow(() -> new InvalidCredentialsException("User not found"));
     }
 
-    private void validateToken(String token, User user) {
-        if (!jwtService.isTokenValid(token, user)) {
-            throw new InvalidCredentialsException("Invalid token");
-        }
-    }
-
 }
-
-

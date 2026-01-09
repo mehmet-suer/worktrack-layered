@@ -8,6 +8,8 @@ import com.worktrack.repo.specification.Spec;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 public class UserSpecifications {
 
@@ -24,8 +26,8 @@ public class UserSpecifications {
         return Spec.eq(User_.role, role);
     }
 
-    public static Specification<User> hasRoles(Role ...roles) {
-        return Spec.in(User_.role, Arrays.stream(roles).toList());
+    public static Specification<User> hasRoles(Role ...rolParams) {
+        return Spec.in(User_.role, Optional.ofNullable(rolParams).map(roles -> Arrays.stream(roles).toList() ).orElseGet(List::of) );
     }
 
 

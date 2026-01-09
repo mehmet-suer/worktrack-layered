@@ -14,6 +14,6 @@ import java.util.Optional;
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findAllByProjectIdAndStatusNot(Long projectId, Status status);
 
-    @Query("SELECT t FROM Task t WHERE t.id = :taskId AND t.project.id = :projectId")
-    Optional<Task> findByIdAndProjectId(@Param("taskId") Long taskId, @Param("projectId") Long projectId);
+    @Query("SELECT t FROM Task t WHERE t.id = :taskId AND t.project.id = :projectId AND t.status <> :deletedStatus")
+    Optional<Task> findByIdAndProjectId(@Param("taskId") Long taskId, @Param("projectId") Long projectId, @Param("deletedStatus") Status deletedStatus);
 }

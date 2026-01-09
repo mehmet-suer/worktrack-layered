@@ -1,12 +1,20 @@
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-RUN addgroup -S appgroup && adduser -u 1000 -S appuser -G appgroup \
-    && mkdir -p /app/data && chown -R appuser:appgroup /app
+RUN groupadd --system appgroup \
+ && useradd  --system \
+            --uid 1000 \
+            --gid appgroup \
+            --home-dir /app \
+            --create-home \
+            --shell /usr/sbin/nologin \
+            appuser \
+ && mkdir -p /app/data \
+ && chown -R appuser:appgroup /app
 
 ARG JAR_FILE=build/libs/app.jar
-COPY --chown=appuser:appgroup ${JAR_FILE} app.jar
+COPY --chown=appuser:appgroup ${JAR_FILE} /app/app.jar
 
 USER appuser
 

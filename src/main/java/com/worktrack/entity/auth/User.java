@@ -1,17 +1,22 @@
 package com.worktrack.entity.auth;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.worktrack.entity.base.AuditableBaseEntity;
-import com.worktrack.entity.project.Project;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.worktrack.entity.base.AuditableBaseEntity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -57,7 +62,7 @@ public class User extends AuditableBaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();  // default method cagirma.
+        return UserDetails.super.isAccountNonExpired();
     }
 
     public void setUsername(String username) {

@@ -53,6 +53,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Validation error", content = @Content),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable Long id,
                                                @Valid @RequestBody UpdateUserRequest request) {
@@ -71,19 +72,18 @@ public class UserController {
     }
 
 
-
     @Operation(summary = "Get user by ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User found",
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
         UserResponse result = userService.findByIdForced(id);
         return ResponseEntity.ok(result);
     }
-
 
 
     @Operation(summary = "Search users")
@@ -94,6 +94,7 @@ public class UserController {
                             array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))
                     )),
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/search")
     public ResponseEntity<List<UserResponse>> search(@Valid @RequestBody SearchUserRequest request) {
 

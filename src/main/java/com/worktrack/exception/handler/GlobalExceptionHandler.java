@@ -34,14 +34,14 @@ public class GlobalExceptionHandler {
     private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(AuthenticationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleAuthentication(AuthenticationException ex) {
         logger.info("Authentication failed", ex);
         return buildResponse(AUTHENTICATION_FAILED, "Authentication failed. Please try again.");
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleInvalidCredentials(InvalidCredentialsException ex) {
         logger.info("Invalid credentials", ex);
         return buildResponse(INVALID_CREDENTIAL, "Invalid username or password.");
@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CannotAcquireLockException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ErrorResponse handleAcquireLock(CannotAcquireLockException ex) {
         logger.error("Cannot acquire lock", ex);
         return buildResponse(DB_ACQUIRE_LOCK, "Database is temporarily unavailable. Please try again later.");

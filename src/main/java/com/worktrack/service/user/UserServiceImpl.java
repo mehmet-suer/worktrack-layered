@@ -13,10 +13,12 @@ import com.worktrack.infra.cache.CacheNames;
 import com.worktrack.mapper.UserResponseMapper;
 import com.worktrack.repo.specification.Spec;
 import com.worktrack.repo.user.UserRepository;
+import com.worktrack.repo.user.specification.UserSpecifications;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static com.worktrack.repo.user.specification.UserSpecifications.*;
 
 
 @Service
@@ -69,7 +70,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
 
-    public Optional<UserResponse> findById(Long id) {
+    private Optional<UserResponse> findById(Long id) {
         return userRepository.findById(id).map(userResponseMapper::toDto);
     }
 
@@ -80,27 +81,35 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository.findByUsername(username);
     }
 
+    @Transactional(readOnly = true)
     public Optional<UserResponse> findByEmail(String email) {
         return userRepository.findByEmail(email).map(userResponseMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    @PreAuthorize("@userPolicy.canListUsers()")
     public List<UserResponse> findAll() {
         return userRepository.findAll().stream().map(userResponseMapper::toDto).toList();
     }
 
+    @Transactional(readOnly = true)
+    @PreAuthorize("@userPolicy.canListUsersByRole()")
     public List<UserResponse> findAllByRole(Role role) {
         return userRepository.findByRole(role).stream().map(userResponseMapper::toDto).toList();
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
     @Transactional
+    @PreAuthorize("@userPolicy.canDeleteUser(#id)")
     public void deleteUser(Long id) {
         User user = findEntityByIdForced(id);
         user.setStatus(Status.DELETED);
@@ -115,10 +124,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if (byUsername != null) byUsername.evict(username);
     }
 
-
+    @Transactional
+    @PreAuthorize("@userPolicy.canUpdateUser(#id)")
     public UserResponse update(Long id, UpdateUserRequest request) {
         User user = findEntityByIdForced(id);
-
+        clearUserCache(user.getUsername());
         if (request.username() != null) {
             user.setUsername(request.username());
         }
@@ -133,12 +143,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
 
         userRepository.save(user);
-        clearUserCache(user.getUsername());
         return userResponseMapper.toDto(user);
-
     }
 
     @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("@userPolicy.canReadUser(#id)")
     public UserResponse findByIdForced(Long id) {
         return this.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -146,13 +156,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User findEntityByIdForced(Long id) {
-        return userRepository.findById(id)
+        return userRepository.findByIdAndStatusNot(id, Status.DELETED)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("================================================================== cagrildi.");
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
@@ -162,13 +171,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
 
+    @PreAuthorize("@userPolicy.canSearchUsers()")
     public List<UserResponse> search(SearchUserRequest request) {
-
         Specification<User> spec = Spec.and(
-                Specification.<User>unrestricted(),
-                fullNameContains(request.fullName()),
-                hasRoles(request.role()),
-                hasEmail(request.email())
+                Spec.whenNotBlank(request.fullName(), UserSpecifications::fullNameContains),
+                Spec.whenNotNull(request.role(), UserSpecifications::hasRole),
+                Spec.whenNotBlank(request.email(), UserSpecifications::hasEmail)
         );
 
         return userRepository.findAll(spec)

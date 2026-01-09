@@ -5,4 +5,6 @@ public class CacheNames {
     }
 
     public static final String USERS_BY_USERNAME = "users.byUsername";
+    public static final String USERS_BY_ID = "users.byUserId";
+
 }
