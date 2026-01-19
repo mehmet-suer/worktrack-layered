@@ -90,7 +90,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Project findByIdForced(Long id) {
-        return projectRepository.findByIdAndStatusNot(id, Status.DELETED)
+        return projectRepository.findActiveById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Project with id " + id + " not found"));
     }
 

@@ -23,4 +23,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Page<Project> findByStatus(Status status, Pageable pageable);
 
     Optional<Project> findByIdAndStatusNot(Long id, Status status);
+
+
+    default Optional<Project> findActiveById(Long id) {
+        return findByIdAndStatusNot(id, Status.DELETED);
+    }
 }

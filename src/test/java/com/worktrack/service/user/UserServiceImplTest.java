@@ -97,7 +97,7 @@ public class UserServiceImplTest {
             assertEquals(request.username(), response.username());
             assertEquals(request.fullName(), response.fullName());
             assertEquals(request.email(), response.email());
-            assertEquals(request.role().name(), response.role());
+            assertEquals(Role.EMPLOYEE.name(), response.role());
             assertEquals(1L, response.id());
 
             // verify

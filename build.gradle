@@ -23,12 +23,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation('org.springframework.boot:spring-boot-starter-web') {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
 	}
-    implementation "com.github.ben-manes.caffeine:caffeine:3.2.3"
 
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.springframework.retry:spring-retry'
@@ -63,28 +60,6 @@ dependencies {
 	testFixturesImplementation 'com.fasterxml.jackson.core:jackson-databind'
 
     annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen:6.6.0.Final'
-}
-
-configurations {
-    testImplementation {
-        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
-        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
-    }
-    testRuntimeOnly {
-        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
-        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
-    }
-    testRuntimeClasspath {
-        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
-        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
-    }
-}
-
-
-dependencyManagement {
-	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.0"
-	}
 }
 
 tasks.named('test') {

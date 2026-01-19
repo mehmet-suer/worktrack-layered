@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,7 +52,6 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Validation error", content = @Content),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable Long id,
                                                @Valid @RequestBody UpdateUserRequest request) {
@@ -65,7 +63,6 @@ public class UserController {
     @Operation(summary = "Get all users", description = "Requires ADMIN role.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of users retrieved", content = @Content(schema = @Schema(implementation = UserResponse.class)))})
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAll() {
         return ResponseEntity.ok(userService.findAll());
@@ -78,7 +75,6 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
         UserResponse result = userService.findByIdForced(id);
@@ -94,7 +90,6 @@ public class UserController {
                             array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))
                     )),
     })
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/search")
     public ResponseEntity<List<UserResponse>> search(@Valid @RequestBody SearchUserRequest request) {
 
@@ -108,7 +103,6 @@ public class UserController {
             @ApiResponse(responseCode = "204", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.deleteUser(id);

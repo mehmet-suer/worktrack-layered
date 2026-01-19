@@ -8,9 +8,8 @@ START_OBSERVABILITY=false
 USE_LOCAL_CONFIG=false
 
 usage() {
-  echo "Usage: $0 [-o] [-c]"
+  echo "Usage: $0 [-o]"
   echo "  -o   Start observability stack (Grafana/Prometheus/Tempo/Loki, OTEL on)"
-  echo "  -c   Use 'local-config' profile instead of 'local'"
   exit 1
 }
 
@@ -18,7 +17,6 @@ usage() {
 while getopts "oc" opt; do
   case ${opt} in
     o ) START_OBSERVABILITY=true ;;
-    c ) USE_LOCAL_CONFIG=true ;;
     * ) usage ;;
   esac
 done
@@ -47,11 +45,9 @@ else
 fi
 
 
-if [ "$USE_LOCAL_CONFIG" = true ]; then
-  APP_PROFILES="local-config"
-else
-  APP_PROFILES="local"
-fi
+
+APP_PROFILES="local"
+
 
 echo "🚀 Starting app with profile: $APP_PROFILES"
 ./gradlew :bootRun --args="--spring.profiles.active=${APP_PROFILES}" \

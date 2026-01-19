@@ -11,12 +11,6 @@ spring:
       ddl-auto: validate
     show-sql: true
 
-  cloud:
-    config:
-      enabled: false
-      import-check:
-        enabled: false
-
   cache:
     type: redis
     redis:

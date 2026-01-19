@@ -41,12 +41,12 @@ public class UserTestUtils {
         String password = "password" + id;
         String fullName = "Test User " + id;
 
-        return new RegisterUserRequest(username, email, password, fullName, Role.EMPLOYEE);
+        return new RegisterUserRequest(username, email, password, fullName);
     }
 
 
     public static RegisterUserRequest dummyInvalidRegistrationRequest() {
-        return new RegisterUserRequest("", "invalidEmail.test.com", "short", "", Role.EMPLOYEE);
+        return new RegisterUserRequest("", "invalidEmail.test.com", "short", "");
     }
     public static UpdateUserRequest dummyUpdateRequest() {
         int id = counter.getAndIncrement();
@@ -75,7 +75,7 @@ public class UserTestUtils {
                 request.username(),
                 request.email(),
                 request.fullName(),
-                request.role().name(),
+                Role.EMPLOYEE.name(),
                 null,
                 null
         );
@@ -99,8 +99,7 @@ public class UserTestUtils {
                 "user" + id,
                 email,
                 "Password" + id,
-                "Test User " + id,
-                Role.EMPLOYEE
+                "Test User " + id
         );
     }
 
@@ -110,8 +109,7 @@ public class UserTestUtils {
                 username,
                 "test" + id + "@example.com",
                 "Password" + id,
-                "Test User " + id,
-                Role.EMPLOYEE
+                "Test User " + id
         );
     }
 

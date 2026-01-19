@@ -39,7 +39,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Transactional
     public TaskResponse createTask(Long projectId, CreateTaskRequest request) {
-        hibernateFilterManager.enableNotDeletedFilter();
 
         Project project = projectService.findByIdForced(projectId);
 
@@ -65,7 +64,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Transactional
     public TaskResponse assignTask(ProjectTaskKey projectTaskKey, AssignTaskRequest request) {
-        hibernateFilterManager.enableNotDeletedFilter();
         Task task = findByIdAndProjectIdForced(projectTaskKey);
         User user = userService.findEntityByIdForced(request.userId());
         task.assignTo(user);
@@ -77,7 +75,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional(readOnly = true)
     public Task findByIdAndProjectIdForced(ProjectTaskKey projectTaskKey) {
-        return taskRepository.findByIdAndProjectId(projectTaskKey.taskId().value(), projectTaskKey.projectId().value(), Status.DELETED)
+        return taskRepository.findActiveByIdAndProjectId(projectTaskKey.taskId().value(), projectTaskKey.projectId().value())
                 .orElseThrow(() ->
                         new EntityNotFoundException("Task with " + projectTaskKey.taskId().value() +
                                 " and ProjectId " + projectTaskKey.projectId().value() + " not found")
@@ -87,7 +85,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskResponse> getTasksByProject(Long projectId) {
-        return taskRepository.findAllByProjectIdAndStatusNot(projectId, Status.DELETED)
+        return taskRepository.findAllActivesByProjectId(projectId)
                 .stream()
                 .map(this::toResponse)
                 .toList();

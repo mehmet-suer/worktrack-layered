@@ -17,7 +17,7 @@ public class EnableNotDeletedFilterAspect {
 
     @Before("(@annotation(tx) || @within(tx))")
     public void enableFilterOnlyForReadOnly(Transactional tx) {
-        if (tx.readOnly()) {
+        if (tx !=  null && tx.readOnly()) {
             filterManager.enableNotDeletedFilter();
         }
     }

@@ -32,8 +32,8 @@ public class AuthController {
 
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getUserName(@Valid @RequestHeader("Authorization") String authHeader) {
-        UserResponse userResponse = authService.getUserInfoFromToken(authHeader);
+    public ResponseEntity<UserResponse> getUserName() {
+        UserResponse userResponse = authService.getCurrentUserInfo();
         return ResponseEntity.ok(userResponse);
     }
 }

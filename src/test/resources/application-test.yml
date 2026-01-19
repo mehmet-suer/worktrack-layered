@@ -15,14 +15,6 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
-  cloud:
-    config:
-      enabled: false
-      import-check:
-        enabled: false
+
 file:
   upload-dir: ${java.io.tmpdir}/worktrack-test-uploads
-
-eureka:
-  client:
-    enabled: false

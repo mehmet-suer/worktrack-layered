@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public UserResponse register(RegisterUserRequest request) {
         validateRegistrationRequest(request);
         String encodedPassword = getEncodedPassword(request.password());
-        var user = new User(request.username(), request.email(), encodedPassword, request.fullName(), request.role());
+        var user = new User(request.username(), request.email(), encodedPassword, request.fullName(), Role.EMPLOYEE);
         userRepository.save(user);
         return userResponseMapper.toDto(user);
     }
@@ -170,7 +170,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return (user != null) ? userResponseMapper.toDto(user) : null;
     }
 
-
+    @Transactional(readOnly = true)
     @PreAuthorize("@userPolicy.canSearchUsers()")
     public List<UserResponse> search(SearchUserRequest request) {
         Specification<User> spec = Spec.and(

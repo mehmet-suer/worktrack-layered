@@ -6,5 +6,5 @@ import com.worktrack.dto.response.user.UserResponse;
 public interface AuthService {
     LoginResponse authenticate(String username, String rawPassword);
 
-    UserResponse getUserInfoFromToken(String authHeader);
+    UserResponse getCurrentUserInfo();
 }
