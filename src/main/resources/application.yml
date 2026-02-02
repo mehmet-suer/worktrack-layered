@@ -12,6 +12,15 @@ management:
       enabled: true
 
 spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      validation-timeout: 5000
+
   jackson:
     deserialization:
       READ_UNKNOWN_ENUM_VALUES_AS_NULL: false

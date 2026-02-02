@@ -17,19 +17,17 @@ public interface UserService {
 
     UserResponse update(Long id, UpdateUserRequest request);
 
+    UserResponse assignRole(Long id, Role role);
+
     List<UserResponse> findAllByRole(Role role);
 
     Optional<User> findByUsername(String username);
-
-    Optional<UserResponse> findByEmail(String email);
 
     List<UserResponse> findAll();
 
     void deleteUser(Long id);
 
     boolean existsByUsername(String username);
-
-    boolean existsByEmail(String email);
 
     UserResponse findByIdForced(Long id);
 

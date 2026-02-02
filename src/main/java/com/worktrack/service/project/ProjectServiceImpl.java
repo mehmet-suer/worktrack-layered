@@ -7,6 +7,7 @@ import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.entity.project.Project;
 import com.worktrack.exception.EntityNotFoundException;
+import com.worktrack.infra.retry.TransientDbRetry;
 import com.worktrack.mapper.ProjectResponseMapper;
 import com.worktrack.repo.ProjectRepository;
 import com.worktrack.security.auth.AuthenticationFacade;
@@ -57,9 +58,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
+    @TransientDbRetry
     public List<ProjectResponse> getAllProjectsForCurrentUser() {
         var currentUser = authenticationFacade.getCurrentUserId();
-        return projectRepository.findAllByOwnerIdWithOwner(currentUser)
+        return projectRepository.findAllActiveByOwnerIdWithOwner(currentUser)
                 .stream()
                 .map(project -> {
                     var owner = project.getOwner(); // NOTE: This must be done inside the service layer.
@@ -73,8 +75,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
+    @TransientDbRetry
     public Page<ProjectResponse> getAllProjects(Pageable pageable) {
-        Page<Project> page = projectRepository.findByStatus(Status.ACTIVE, pageable);
+        Page<Project> page = projectRepository.findAllActive(pageable);
 
         List<ProjectResponse> responses = page.getContent().stream()
                 .map(project -> {
@@ -89,15 +92,23 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
+    @TransientDbRetry
     public Project findByIdForced(Long id) {
         return projectRepository.findActiveById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project with id " + id + " not found"));
+    }
+    @Override
+    @TransientDbRetry
+    public Project findByIdWithOwnerForced(Long id) {
+        return projectRepository.findActiveByIdWithOwner(id)
                 .orElseThrow(() -> new EntityNotFoundException("Project with id " + id + " not found"));
     }
 
     @Override
     @Transactional(readOnly = true)
+    @TransientDbRetry
     public ProjectResponse getProjectById(Long id) {
-        Project project = findByIdForced(id);
+        Project project = findByIdWithOwnerForced(id);
         User owner = project.getOwner();
         return projectResponseMapper.toDto(project, userService.toDto(owner));
     }
@@ -107,10 +118,5 @@ public class ProjectServiceImpl implements ProjectService {
     public void deleteProject(Long id) {
         Project project = findByIdForced(id);
         project.setStatus(Status.DELETED);
-    }
-
-    @Override
-    public Optional<Project> findById(Long id) {
-        return projectRepository.findById(id);
     }
 }

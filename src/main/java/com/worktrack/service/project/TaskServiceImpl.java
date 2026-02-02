@@ -10,7 +10,7 @@ import com.worktrack.entity.base.Status;
 import com.worktrack.entity.project.Project;
 import com.worktrack.entity.project.Task;
 import com.worktrack.exception.EntityNotFoundException;
-import com.worktrack.infra.hibernate.HibernateFilterManager;
+import com.worktrack.infra.retry.TransientDbRetry;
 import com.worktrack.repo.TaskRepository;
 import com.worktrack.service.user.UserService;
 import org.springframework.stereotype.Service;
@@ -23,18 +23,15 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final ProjectService projectService;
     private final UserService userService;
-    private final HibernateFilterManager hibernateFilterManager;
 
     public TaskServiceImpl(TaskRepository taskRepository,
                            ProjectService projectService,
-                           UserService userService,
-
-                           HibernateFilterManager hibernateFilterManager) {
+                           UserService userService) {
         this.taskRepository = taskRepository;
         this.projectService = projectService;
         this.userService = userService;
 
-        this.hibernateFilterManager = hibernateFilterManager;
+
     }
 
     @Transactional
@@ -74,8 +71,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
+    @TransientDbRetry
     public Task findByIdAndProjectIdForced(ProjectTaskKey projectTaskKey) {
-        return taskRepository.findActiveByIdAndProjectId(projectTaskKey.taskId().value(), projectTaskKey.projectId().value())
+        return taskRepository.findByIdAndProjectIdAndStatusNot(projectTaskKey.taskId().value(), projectTaskKey.projectId().value(), Status.DELETED)
                 .orElseThrow(() ->
                         new EntityNotFoundException("Task with " + projectTaskKey.taskId().value() +
                                 " and ProjectId " + projectTaskKey.projectId().value() + " not found")
@@ -84,6 +82,7 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Transactional(readOnly = true)
+    @TransientDbRetry
     public List<TaskResponse> getTasksByProject(Long projectId) {
         return taskRepository.findAllActivesByProjectId(projectId)
                 .stream()

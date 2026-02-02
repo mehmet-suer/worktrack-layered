@@ -1,5 +1,6 @@
 package com.worktrack.controller;
 
+import com.worktrack.dto.request.user.AssignRoleRequest;
 import com.worktrack.dto.request.user.RegisterUserRequest;
 import com.worktrack.dto.request.user.SearchUserRequest;
 import com.worktrack.dto.request.user.UpdateUserRequest;
@@ -95,6 +96,21 @@ public class UserController {
 
         var results = userService.search(request);
         return ResponseEntity.ok(results);
+    }
+
+
+    @Operation(summary = "Assign role to user", description = "Requires ADMIN role.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Role assigned successfully",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
+    @PatchMapping("/{id}/role")
+    public ResponseEntity<UserResponse> assignRole(@PathVariable Long id,
+                                                   @Valid @RequestBody AssignRoleRequest request) {
+        UserResponse updatedUser = userService.assignRole(id, request.role());
+        return ResponseEntity.ok(updatedUser);
     }
 
 

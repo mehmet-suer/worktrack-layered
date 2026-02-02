@@ -68,8 +68,6 @@ public class UserServiceImplTest {
     ArgumentCaptor<User> userCaptor;
 
 
-
-
     @Nested
     @DisplayName("register() method")
     class RegisterTests {
@@ -155,8 +153,7 @@ public class UserServiceImplTest {
         Long id = 1L;
         var user = UserTestUtils.dummyUserWithId(id);
         UpdateUserRequest request = UserTestUtils.dummyUpdateRequest();
-        Status deletedStatus = Status.DELETED;
-        when(userRepository.findByIdAndStatusNot(id, deletedStatus)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(id)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(request.password())).thenReturn("encodedPass");
 
         // Act
@@ -167,7 +164,7 @@ public class UserServiceImplTest {
         assertEquals(request.email(), updatedUser.email());
         assertEquals(request.fullName(), updatedUser.fullName());
 
-        verify(userRepository).findByIdAndStatusNot(id, deletedStatus);
+        verify(userRepository).findActiveById(id);
         verify(userResponseMapper).toDto(user);
     }
 
@@ -177,7 +174,7 @@ public class UserServiceImplTest {
         Long id = 1L;
 
         UpdateUserRequest request = UserTestUtils.dummyUpdateRequest();
-        when(userRepository.findByIdAndStatusNot(id, Status.DELETED)).thenReturn(Optional.empty());
+        when(userRepository.findActiveById(id)).thenReturn(Optional.empty());
 
         // Act
         EntityNotFoundException exception = assertThrowsExactly(EntityNotFoundException.class,
@@ -185,7 +182,7 @@ public class UserServiceImplTest {
         );
         // Assert
         assertEquals("User not found", exception.getMessage());
-        verify(userRepository).findByIdAndStatusNot(id, Status.DELETED);
+        verify(userRepository).findActiveById(id);
         verify(userRepository, never()).save(any());
     }
 
@@ -194,7 +191,7 @@ public class UserServiceImplTest {
         // Arrange
 
         var user = UserTestUtils.dummyUserWithId(1L);
-        when(userRepository.findAll()).thenReturn(List.of(user));
+        when(userRepository.findAllActives()).thenReturn(List.of(user));
 
         // Act
         var users = userService.findAll();
@@ -202,7 +199,7 @@ public class UserServiceImplTest {
         // Assert
         assertEquals(1, users.size());
         assertEquals(user.getRole().name(), users.getFirst().role());
-        verify(userRepository).findAll();
+        verify(userRepository).findAllActives();
         verify(userResponseMapper).toDto(user);
     }
 
@@ -211,7 +208,7 @@ public class UserServiceImplTest {
         // Arrange
         var role = Role.EMPLOYEE;
         var user = UserTestUtils.userWithRole(role);
-        when(userRepository.findByRole(role)).thenReturn(List.of(user));
+        when(userRepository.findAllActiveByRole(role)).thenReturn(List.of(user));
 
         // Act
         var users = userService.findAllByRole(Role.EMPLOYEE);
@@ -219,7 +216,7 @@ public class UserServiceImplTest {
         // Assert
         assertEquals(1, users.size());
         assertEquals(role.name(), users.getFirst().role());
-        verify(userRepository).findByRole(role);
+        verify(userRepository).findAllActiveByRole(role);
         verify(userResponseMapper).toDto(user);
     }
 
@@ -229,7 +226,8 @@ public class UserServiceImplTest {
         // Arrange
 
         User user = UserTestUtils.dummyUserWithId(1L);
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepository.findActiveByUsername(user.getUsername()))
+                .thenReturn(Optional.of(user));
 
         // Act
         Optional<User> result = userService.findByUsername(user.getUsername());
@@ -238,59 +236,23 @@ public class UserServiceImplTest {
         assertTrue(result.isPresent());
         assertEquals(user.getUsername(), result.get().getUsername());
         verifyNoInteractions(userResponseMapper);
-        verify(userRepository).findByUsername(user.getUsername());
+        verify(userRepository).findActiveByUsername(user.getUsername());
     }
 
     @Test
     void shouldReturnEmptyWhenUserNotFoundByUsername() {
         // Arrange
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
+        when(userRepository.findActiveByUsername(any(String.class)))
+                .thenReturn(Optional.empty());
 
         // Act
         Optional<User> result = userService.findByUsername("mehmet");
         // Assert
         assertTrue(result.isEmpty());
-        verify(userRepository).findByUsername(any(String.class));
+        verify(userRepository).findActiveByUsername(any(String.class));
         verify(userResponseMapper, never()).toDto(any());
 
     }
-
-    @Test
-    void shouldReturnUserWhenFoundByEmail() {
-        // Arrange
-        var user = UserTestUtils.dummyUserWithId(1L);
-        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
-        // Act
-        Optional<UserResponse> result = userService.findByEmail(user.getEmail());
-
-        // Assert
-        assertTrue(result.isPresent());
-        assertEquals(user.getEmail(), result.get().email());
-        assertEquals(user.getUsername(), result.get().username());
-        assertEquals(user.getFullName(), result.get().fullName());
-        assertEquals(user.getRole().name(), result.get().role());
-
-        verify(userRepository).findByEmail(user.getEmail());
-        verify(userResponseMapper).toDto(user);
-    }
-
-    @Test
-    void shouldReturnEmptyResultWhenUserNotFoundByEmail() {
-        // Arrange
-        String unknownEmail = "unknown@email.com";
-
-        when(userRepository.findByEmail(unknownEmail)).thenReturn(Optional.empty());
-
-        // Act
-        Optional<UserResponse> result = userService.findByEmail(unknownEmail);
-
-        // Assert
-        assertTrue(result.isEmpty());
-        verify(userRepository).findByEmail(unknownEmail);
-        verify(userResponseMapper, never()).toDto(any());
-    }
-
-
 
 
     @Test
@@ -298,8 +260,7 @@ public class UserServiceImplTest {
         // Arrange
         var user = UserTestUtils.dummyUserWithId(1L);
 
-        when(userRepository.findByIdAndStatusNot(1L, Status.DELETED)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
         // Act
         userService.deleteUser(1L);
@@ -326,7 +287,7 @@ public class UserServiceImplTest {
     @Test
     void shouldReturnTrueWhenEmailExists() {
         // Arrange
-        String  email = "test.te@mail.com";
+        String email = "test.te@mail.com";
         when(userRepository.existsByEmail(email)).thenReturn(true);
 
         // Act
@@ -341,7 +302,7 @@ public class UserServiceImplTest {
     @Test
     void shouldFindUserByIdForced() {
         User user = UserTestUtils.dummyUserWithId(1L);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
         // Act
         UserResponse result = userService.findByIdForced(1L);
@@ -349,14 +310,14 @@ public class UserServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(user.getUsername(), result.username());
-        verify(userRepository).findById(1L);
+        verify(userRepository).findActiveById(1L);
         verify(userResponseMapper).toDto(user);
     }
 
     @Test
     void shouldThrowWhenUserNotFoundByIdForced() {
         // Arrange
-        when(userRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+        when(userRepository.findActiveById(any(Long.class))).thenReturn(Optional.empty());
 
         // Act
         EntityNotFoundException ex = assertThrowsExactly(
@@ -370,9 +331,9 @@ public class UserServiceImplTest {
 
     @Test
     void shouldReturnEntityWhenFoundByIdForced() {
+        // Arrange
         User user = UserTestUtils.dummyUserWithId(1L);
-        Status deletedStatus = Status.DELETED;
-        when(userRepository.findByIdAndStatusNot(1L, deletedStatus)).thenReturn(Optional.of(user));
+        when(userRepository.findActiveById(1L)).thenReturn(Optional.of(user));
 
         // Act
         User result = userService.findEntityByIdForced(1L);
@@ -380,14 +341,14 @@ public class UserServiceImplTest {
         // Assert
         assertNotNull(result);
         assertSame(user, result);
-        verify(userRepository).findByIdAndStatusNot(1L, deletedStatus);
+        verify(userRepository).findActiveById(1L);
         verifyNoInteractions(userResponseMapper);
     }
 
     @Test
     void shouldThrowIfUserDoesNotExistOnForcedLookup() {
         // Arrange
-        when(userRepository.findByIdAndStatusNot(any(Long.class), eq(Status.DELETED))).thenReturn(Optional.empty());
+        when(userRepository.findActiveById(any(Long.class))).thenReturn(Optional.empty());
 
         // Act
         EntityNotFoundException ex = assertThrowsExactly(
@@ -402,7 +363,8 @@ public class UserServiceImplTest {
     void shouldReturnUserDetailsIfUsernameExists() {
         // Arrange
         User user = UserTestUtils.dummyUserWithId(1L);
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepository.findActiveByUsername(user.getUsername()))
+                .thenReturn(Optional.of(user));
 
         // Act
         UserDetails result = userService.loadUserByUsername(user.getUsername());
@@ -418,7 +380,8 @@ public class UserServiceImplTest {
     void shouldThrowUsernameNotFoundExceptionWhenUserMissing() {
         // Arrange
         String username = "unknown";
-        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        when(userRepository.findActiveByUsername(username))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
         UsernameNotFoundException exception = assertThrows(
@@ -428,7 +391,6 @@ public class UserServiceImplTest {
 
         assertEquals("User not found", exception.getMessage());
     }
-
 
 
     @Test

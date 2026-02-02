@@ -1,16 +1,19 @@
 package com.worktrack.controller;
 
 
-import com.worktrack.config.JsonTestConfig;
-import com.worktrack.dto.request.user.RegisterUserRequest;
-import com.worktrack.dto.request.user.UpdateUserRequest;
-import com.worktrack.dto.response.user.UserResponse;
-import com.worktrack.exception.EntityNotFoundException;
-import com.worktrack.security.jwt.JwtAuthenticationFilter;
-import com.worktrack.security.jwt.JwtService;
-import com.worktrack.service.user.UserService;
-import com.worktrack.util.JsonUtils;
-import com.worktrack.util.UserTestUtils;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,21 +25,30 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.worktrack.config.JsonTestConfig;
+import com.worktrack.dto.request.user.RegisterUserRequest;
+import com.worktrack.dto.request.user.UpdateUserRequest;
+import com.worktrack.dto.response.user.UserResponse;
+import com.worktrack.exception.EntityNotFoundException;
+import com.worktrack.security.jwt.JwtAuthenticationFilter;
+import com.worktrack.security.jwt.JwtService;
+import com.worktrack.service.user.UserService;
+import com.worktrack.util.JsonUtils;
+import com.worktrack.util.UserTestUtils;
 
 @WebMvcTest(controllers = UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(JsonTestConfig.class)
+@Import({JsonTestConfig.class})
+@ActiveProfiles("test")
+@TestPropertySource(properties="app.hibernate.filter.enabled=false")
 public class UserControllerTest {
+
     private static final Logger logger = LoggerFactory.getLogger(UserControllerTest.class);
 
     @Autowired

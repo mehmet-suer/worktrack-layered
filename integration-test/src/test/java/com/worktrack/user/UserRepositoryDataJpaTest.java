@@ -3,6 +3,7 @@ package com.worktrack.user;
 import com.worktrack.base.AbstractJpaTest;
 import com.worktrack.entity.auth.Role;
 import com.worktrack.entity.auth.User;
+import com.worktrack.entity.base.Status;
 import com.worktrack.repo.user.UserRepository;
 import com.worktrack.util.UserTestUtils;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,7 @@ class UserRepositoryDataJpaTest extends AbstractJpaTest {
         // arrange
         var saved = userRepository.save(UserTestUtils.dummyUser());
         // act
-        Optional<User> found = userRepository.findByUsername(saved.getUsername());
+        Optional<User> found = userRepository.findActiveByUsername(saved.getUsername());
 
         // assert
         assertThat(found).get()
@@ -39,39 +40,27 @@ class UserRepositoryDataJpaTest extends AbstractJpaTest {
         var user = UserTestUtils.dummyUser();
         userRepository.save(user);
         // act
-        Optional<User> found = userRepository.findByUsername(user.getUsername() + "someText");
+        Optional<User> found = userRepository.findActiveByUsername(user.getUsername() + "someText");
 
         // assert
         assertThat(found).isEmpty();
     }
 
-
     @Test
-    @DisplayName("should return user when email exists")
-    void shouldReturnUserWhenEmailExists() {
+    @DisplayName("should not return user when status is DELETED")
+    void shouldNotReturnUserWhenDeleted() {
         // arrange
-        var saved = userRepository.save(UserTestUtils.dummyUser());
+        var user = UserTestUtils.dummyUser();
+        user.setStatus(Status.DELETED);
+        userRepository.save(user);
+
         // act
-        Optional<User> found = userRepository.findByEmail(saved.getEmail());
-
-        // assert
-        assertThat(found).get()
-                .extracting(User::getId, User::getUsername, User::getEmail)
-                .containsExactly(saved.getId(), saved.getUsername(), saved.getEmail());
-
-    }
-
-    @Test
-    @DisplayName("should return empty when email does not exist")
-    void shouldReturnEmptyWhenEmailDoesNotExist() {
-        // arrange
-        var saved = userRepository.save(UserTestUtils.dummyUser());
-        // act
-        Optional<User> found = userRepository.findByEmail(saved.getEmail() + "someText");
+        Optional<User> found = userRepository.findActiveByUsername(user.getUsername());
 
         // assert
         assertThat(found).isEmpty();
     }
+
 
     @Test
     @DisplayName("should return users when role matches")

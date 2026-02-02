@@ -12,10 +12,34 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
-    Optional<User> findByUsername(String username);
-    Optional<User> findByEmail(String email);
+
+    Optional<User> findByUsernameAndStatusNot(String username, Status status);
+
     List<User> findByRole(Role role);
-    boolean existsByUsername(String username);
-    boolean existsByEmail(String email);
+
+    List<User> findByRoleAndStatusNot(Role role, Status status);
+
     Optional<User> findByIdAndStatusNot(Long id, Status status);
+
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+
+    default Optional<User> findActiveByUsername(String username) {
+        return findByUsernameAndStatusNot(username, Status.DELETED);
+    }
+
+    default List<User> findAllActiveByRole(Role role) {
+        return findByRoleAndStatusNot(role, Status.DELETED);
+    }
+
+    default Optional<User> findActiveById(Long id) {
+        return findByIdAndStatusNot(id, Status.DELETED);
+    }
+
+    List<User> findAllByStatusNot(Status status);
+
+    default List<User> findAllActives() {
+        return findAllByStatusNot(Status.DELETED);
+    }
 }

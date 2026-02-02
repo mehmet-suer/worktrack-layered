@@ -10,6 +10,7 @@ import com.worktrack.entity.base.Status;
 import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.exception.user.DuplicateUserException;
 import com.worktrack.infra.cache.CacheNames;
+import com.worktrack.infra.retry.TransientDbRetry;
 import com.worktrack.mapper.UserResponseMapper;
 import com.worktrack.repo.specification.Spec;
 import com.worktrack.repo.user.UserRepository;
@@ -71,39 +72,40 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     private Optional<UserResponse> findById(Long id) {
-        return userRepository.findById(id).map(userResponseMapper::toDto);
+        return userRepository.findActiveById(id).map(userResponseMapper::toDto);
     }
 
     @Cacheable(cacheNames = CacheNames.USERS_BY_USERNAME,
             key = "#username",
             unless = "#result == null")
+    @TransientDbRetry
     public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findActiveByUsername(username);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<UserResponse> findByEmail(String email) {
-        return userRepository.findByEmail(email).map(userResponseMapper::toDto);
-    }
 
     @Transactional(readOnly = true)
     @PreAuthorize("@userPolicy.canListUsers()")
+    @TransientDbRetry
     public List<UserResponse> findAll() {
-        return userRepository.findAll().stream().map(userResponseMapper::toDto).toList();
+        return userRepository.findAllActives().stream().map(userResponseMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("@userPolicy.canListUsersByRole()")
+    @TransientDbRetry
     public List<UserResponse> findAllByRole(Role role) {
-        return userRepository.findByRole(role).stream().map(userResponseMapper::toDto).toList();
+        return userRepository.findAllActiveByRole(role).stream().map(userResponseMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)
+    @TransientDbRetry
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
 
     @Transactional(readOnly = true)
+    @TransientDbRetry
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -146,23 +148,36 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userResponseMapper.toDto(user);
     }
 
+    @Transactional
+    @PreAuthorize("@userPolicy.canAssignRole()")
+    public UserResponse assignRole(Long id, Role role) {
+        User user = findEntityByIdForced(id);
+        clearUserCache(user.getUsername());
+        user.setRole(role);
+        userRepository.save(user);
+        return userResponseMapper.toDto(user);
+    }
+
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("@userPolicy.canReadUser(#id)")
+    @TransientDbRetry
     public UserResponse findByIdForced(Long id) {
         return this.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     @Override
+    @TransientDbRetry
     public User findEntityByIdForced(Long id) {
-        return userRepository.findByIdAndStatusNot(id, Status.DELETED)
+        return userRepository.findActiveById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     @Override
+    @TransientDbRetry
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
+        return userRepository.findActiveByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
@@ -172,11 +187,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Transactional(readOnly = true)
     @PreAuthorize("@userPolicy.canSearchUsers()")
+    @TransientDbRetry
     public List<UserResponse> search(SearchUserRequest request) {
         Specification<User> spec = Spec.and(
                 Spec.whenNotBlank(request.fullName(), UserSpecifications::fullNameContains),
                 Spec.whenNotNull(request.role(), UserSpecifications::hasRole),
-                Spec.whenNotBlank(request.email(), UserSpecifications::hasEmail)
+                Spec.whenNotBlank(request.email(), UserSpecifications::hasEmail),
+                UserSpecifications.hasStatus(Status.ACTIVE)
         );
 
         return userRepository.findAll(spec)

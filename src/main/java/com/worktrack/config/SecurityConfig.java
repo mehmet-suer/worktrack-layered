@@ -55,16 +55,16 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/layered/api/v1/users/register",
-                                "/actuator/health",
-                                "/actuator/prometheus",
-                                "/actuator/health/liveness",
-                                "/actuator/health/readiness",
-                                "/layered/api/v1/auth/login")
-                        .permitAll()
-                        .anyRequest().authenticated()
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers(
+                                        "/layered/api/v1/users/register",
+                                        "/actuator/health",
+                                        "/actuator/prometheus",
+                                        "/actuator/health/liveness",
+                                        "/actuator/health/readiness",
+                                        "/layered/api/v1/auth/login")
+                                .permitAll()
+                                .anyRequest().authenticated()
                 ).exceptionHandling(exceptionHandlingConfigurer ->
                         exceptionHandlingConfigurer
                                 .authenticationEntryPoint(jsonAuthenticationEntryPoint)

@@ -16,8 +16,14 @@ import java.util.Optional;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
-    @Query("SELECT p FROM Project p JOIN FETCH p.owner WHERE p.owner.id = :ownerId")
-    List<Project> findAllByOwnerIdWithOwner(@Param("ownerId") Long ownerId);
+    @Query("""
+                SELECT p
+                FROM Project p
+                JOIN FETCH p.owner
+                WHERE p.owner.id = :ownerId
+                  AND p.status <> :deletedStatus
+            """)
+    List<Project> findAllByOwnerIdWithOwner(@Param("ownerId") Long ownerId, @Param("deletedStatus") Status deletedStatus);
 
     @EntityGraph(attributePaths = {"owner"})
     Page<Project> findByStatus(Status status, Pageable pageable);
@@ -25,7 +31,28 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Optional<Project> findByIdAndStatusNot(Long id, Status status);
 
 
+    @Query("""
+                SELECT p
+                FROM Project p
+                LEFT JOIN FETCH p.owner o
+                WHERE p.id = :id
+                  AND p.status <> :deletedStatus
+            """)
+    Optional<Project> findByIdWithOwner(@Param("id") Long id, @Param("deletedStatus") Status deletedStatus);
+
+    default List<Project> findAllActiveByOwnerIdWithOwner(Long ownerId) {
+        return findAllByOwnerIdWithOwner(ownerId, Status.DELETED);
+    }
+
+    default Page<Project> findAllActive(Pageable pageable) {
+        return findByStatus(Status.ACTIVE, pageable);
+    }
+
     default Optional<Project> findActiveById(Long id) {
         return findByIdAndStatusNot(id, Status.DELETED);
+    }
+
+    default Optional<Project> findActiveByIdWithOwner(Long id) {
+        return findByIdWithOwner(id, Status.DELETED);
     }
 }

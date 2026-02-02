@@ -54,6 +54,13 @@ public class UserPolicy {
         return isAdmin();
     }
 
+    /**
+     * Used by @PreAuthorize in UserServiceImpl / assignRole
+     */
+    public boolean canAssignRole() {
+        return isAdmin();
+    }
+
     private boolean isLoggedInUser(Long userId) {
         return authenticationFacade.getCurrentUserId().equals(userId);
     }

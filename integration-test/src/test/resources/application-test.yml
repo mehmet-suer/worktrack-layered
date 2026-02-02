@@ -18,3 +18,7 @@ testcontainers:
     database: worktrack_test
     username: test
     password: test
+
+jwt:
+  secret: OFUxXHlbU01KbmBWI2gteC5RNGFYWV9hPiw+VmoofE8==
+  expiration: 86400000
