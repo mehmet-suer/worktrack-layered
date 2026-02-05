@@ -86,6 +86,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CannotAcquireLockException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ErrorResponse handleAcquireLock(CannotAcquireLockException ex) {
+        logger.error("Database lock acquisition failed", ex);
         return buildResponse(DB_ACQUIRE_LOCK, "Database is temporarily unavailable. Please try again later.", ex);
     }
 
@@ -98,6 +99,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(QueryTimeoutException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ErrorResponse handleQueryTimeout(QueryTimeoutException ex) {
+        logger.error("Database query timeout", ex);
         return buildResponse(DB_QUERY_TIMEOUT, "Database temporarily unavailable", ex);
     }
 

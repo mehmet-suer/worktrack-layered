@@ -34,9 +34,10 @@ dependencies {
 	implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-autoconfigure:2.7.0'
-	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13"
     implementation "org.apache.commons:commons-lang3:3.18.0"
+    implementation "io.github.resilience4j:resilience4j-spring-boot3:2.3.0"
 
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -45,9 +46,9 @@ dependencies {
 	implementation("org.flywaydb:flyway-core:11.8.2")
 	implementation("org.flywaydb:flyway-mysql:11.8.2")
 
-	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
-	implementation  'io.jsonwebtoken:jjwt-impl:0.12.6'
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+	implementation  'io.jsonwebtoken:jjwt-impl:0.13.0'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'
@@ -77,4 +78,3 @@ jar {
 		)
 	}
 }
-
