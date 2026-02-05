@@ -18,7 +18,7 @@ spring:
       port: 6379
 
 jwt:
-  secret: ${jwt.secret}
+  secret: ${jwt.secret:bG9jYWwtZGV2LXNlY3JldC1rZXktMzItYnl0ZXMhISE=}
   expiration: 60000
 
 management:

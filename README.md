@@ -1,3 +1,7 @@
+## Purpose
+
+This repository is not a product. It is a showcase project to practice and demonstrate Spring Boot best practices, production-ready patterns, and infrastructure-friendly setup.
+
 ## Architecture
 
 ### Layered (N-tier) Architecture
@@ -35,17 +39,29 @@
 
 ## Getting Started
 
-1. **Run Locally**
+1. **Start MySQL (Local)**
+    ```sh
+    docker compose -f docker-compose-local.yml up -d
+    ```
+
+2. **Run the App**
     ```sh
     ./runLocal.sh
     ```
 
-## Features
+**Defaults / Local Profile**
+- Profile: `local`
+- DB: `worktrack_db` on `localhost:3307`
+- Credentials: `worktrack / worktrack` (override with `db.username` / `db.password`)
+- JWT: set `jwt.secret` via env or config (must be Base64; local default provided)
+
+## What’s Demonstrated
 
 - User registration with validation and duplicate checks
 - Centralized error handling with meaningful error codes
 - Secure password storage (hashing)
 - Role-based access control
+- Caching, retry, and observability hooks
 - Automated CI/CD pipeline and cloud-native deployment
 
 ## References
@@ -58,5 +74,4 @@
 ---
 
 > **Note:**  
-> This repository is intended to demonstrate modern Spring Boot development practices and production-ready deployment pipelines.
-> Any suggestions or improvements are welcome!
+> This repository intentionally prioritizes best-practice patterns over business value or domain complexity.
