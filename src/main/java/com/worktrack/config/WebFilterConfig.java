@@ -1,6 +1,6 @@
 package com.worktrack.config;
 
-import com.worktrack.infra.web.RequestContextLoggingFilter;
+import com.worktrack.infra.web.CorrelationIdFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,15 +10,13 @@ import org.springframework.core.Ordered;
 public class WebFilterConfig {
 
     @Bean
-    public RequestContextLoggingFilter requestContextLoggingFilter() {
-        return new RequestContextLoggingFilter();
+    public CorrelationIdFilter correlationIdFilter() {
+        return new CorrelationIdFilter();
     }
 
     @Bean
-    public FilterRegistrationBean<RequestContextLoggingFilter> requestContextLoggingFilterRegistration(
-            RequestContextLoggingFilter filter
-    ) {
-        FilterRegistrationBean<RequestContextLoggingFilter> registrationBean = new FilterRegistrationBean<>();
+    public FilterRegistrationBean<CorrelationIdFilter> correlationIdFilterRegistration(CorrelationIdFilter filter) {
+        FilterRegistrationBean<CorrelationIdFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(filter);
         registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registrationBean;

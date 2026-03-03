@@ -42,4 +42,5 @@ test {
 
 tasks.named('test') {
     systemProperty 'spring.profiles.active', 'test'
+    systemProperty 'jwt.secret', 'bG9jYWwtZGV2LXNlY3JldC1rZXktMzItYnl0ZXMhISE='
 }

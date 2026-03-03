@@ -7,11 +7,13 @@ import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.entity.project.Project;
 import com.worktrack.exception.EntityNotFoundException;
+import com.worktrack.infra.observability.SpanNames;
 import com.worktrack.infra.retry.TransientDbRetry;
 import com.worktrack.mapper.ProjectResponseMapper;
 import com.worktrack.repo.ProjectRepository;
 import com.worktrack.security.auth.AuthenticationFacade;
 import com.worktrack.service.user.UserService;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +42,7 @@ public class ProjectServiceImpl implements ProjectService {
         this.projectResponseMapper = projectResponseMapper;
     }
 
+    @WithSpan(SpanNames.PROJECT_CREATE)
     @Transactional
     @Override
     public ProjectResponse createProject(CreateProjectRequest request) {
@@ -93,12 +96,14 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @TransientDbRetry
+    @Transactional(readOnly = true)
     public Project findByIdForced(Long id) {
         return projectRepository.findActiveById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Project with id " + id + " not found"));
     }
     @Override
     @TransientDbRetry
+    @Transactional(readOnly = true)
     public Project findByIdWithOwnerForced(Long id) {
         return projectRepository.findActiveByIdWithOwner(id)
                 .orElseThrow(() -> new EntityNotFoundException("Project with id " + id + " not found"));

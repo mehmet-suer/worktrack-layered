@@ -10,9 +10,11 @@ import com.worktrack.entity.base.Status;
 import com.worktrack.entity.project.Project;
 import com.worktrack.entity.project.Task;
 import com.worktrack.exception.EntityNotFoundException;
+import com.worktrack.infra.observability.SpanNames;
 import com.worktrack.infra.retry.TransientDbRetry;
 import com.worktrack.repo.TaskRepository;
 import com.worktrack.service.user.UserService;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,7 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
+    @WithSpan(SpanNames.TASK_CREATE)
     @Transactional
     public TaskResponse createTask(Long projectId, CreateTaskRequest request) {
 
@@ -109,7 +112,7 @@ public class TaskServiceImpl implements TaskService {
                 task.getId(),
                 task.getTitle(),
                 task.getDescription(),
-                task.getTaskStatus(),
+                task.getTaskStatus().name(),
                 userResponse
         );
     }

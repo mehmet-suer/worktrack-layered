@@ -27,7 +27,10 @@ spring:
       READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE: false
     mapper:
       accept-case-insensitive-enums: true
-
+  data:
+    redis:
+      repositories:
+        enabled: false
 springdoc:
   api-docs:
     enabled: false

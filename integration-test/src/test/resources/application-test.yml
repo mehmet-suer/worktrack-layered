@@ -20,5 +20,5 @@ testcontainers:
     password: test
 
 jwt:
-  secret: OFUxXHlbU01KbmBWI2gteC5RNGFYWV9hPiw+VmoofE8==
+  secret: bCZ0MWB9STlcNV1MN2xyNClZVm1OV1hTcF8kWS42L1M=
   expiration: 86400000

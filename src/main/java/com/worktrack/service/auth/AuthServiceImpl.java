@@ -4,10 +4,11 @@ import com.worktrack.dto.response.LoginResponse;
 import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.User;
 import com.worktrack.exception.auth.InvalidCredentialsException;
+import com.worktrack.infra.observability.SpanNames;
 import com.worktrack.security.auth.AuthenticationFacade;
 import com.worktrack.security.jwt.JwtService;
 import com.worktrack.service.user.UserService;
-import io.jsonwebtoken.JwtException;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,7 @@ public class AuthServiceImpl implements AuthService {
         this.authenticationFacade = authenticationFacade;
     }
 
+    @WithSpan(SpanNames.AUTH_LOGIN)
     public LoginResponse authenticate(String username, String password) {
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
@@ -34,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidCredentialsException("Invalid username or password");
         }
         var generateToken = jwtService.generateToken(user);
-        return new LoginResponse(generateToken.token(), generateToken.type(), generateToken.expiresAt());
+        return new LoginResponse(generateToken.token(), generateToken.type().name(), generateToken.expiresAt());
     }
 
     @Override

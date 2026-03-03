@@ -1,4 +1,7 @@
 spring:
+  devtools:
+   restart:
+       exclude: "**/build/**,**/bin/**, **/logs/**"
   config:
     import: optional:file:/etc/config/secrets.yml
   datasource:
@@ -18,13 +21,18 @@ spring:
       port: 6379
 
 jwt:
-  secret: ${jwt.secret:bG9jYWwtZGV2LXNlY3JldC1rZXktMzItYnl0ZXMhISE=}
+  secret: ${jwt.secret:bCZ0MWB9STlcNV1MN2xyNClZVm1OV1hTcF8kWS42L1M=}
   expiration: 60000
 
 management:
   metrics:
     tags:
       application: worktrack
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.95,0.99
   endpoints:
     web:
       exposure:
@@ -35,6 +43,9 @@ management:
 
 
 otel:
+  instrumentation:
+    logback-mdc:
+      enabled: true
   exporter:
     otlp:
       endpoint: http://localhost:4317

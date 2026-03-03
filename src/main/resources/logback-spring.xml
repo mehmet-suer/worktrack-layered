@@ -2,6 +2,7 @@
     <!-- Console Appender -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdc>true</includeMdc>
             <customFields>{"application":"worktrack"}</customFields>
         </encoder>
     </appender>
@@ -12,6 +13,7 @@
             <file>logs/application.json</file>
             <append>true</append>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdc>true</includeMdc>
                 <customFields>{"environment":"local", "application":"worktrack"}</customFields>
             </encoder>
         </appender>
