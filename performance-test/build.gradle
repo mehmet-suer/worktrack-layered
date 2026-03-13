@@ -1,0 +1,77 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.worktrack'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    gatlingVersion = '3.15.0'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/gatling/java']
+        }
+        resources {
+            srcDirs = ['src/gatling/resources']
+        }
+    }
+}
+
+dependencies {
+    implementation "io.gatling:gatling-core-java:${gatlingVersion}"
+    implementation "io.gatling:gatling-http-java:${gatlingVersion}"
+    runtimeOnly "io.gatling.highcharts:gatling-charts-highcharts:${gatlingVersion}"
+}
+
+tasks.register('gatlingRun', JavaExec) {
+    group = 'verification'
+    description = 'Run Gatling simulation. Use -PsimulationClass=fully.qualified.SimulationName'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.gatling.app.Gatling'
+
+    def simulationClass = project.findProperty('simulationClass')
+    if (simulationClass != null) {
+        args( '-s', simulationClass.toString())
+    }
+
+    def forwardedProps = [
+            'baseUrl',
+            'perf.username',
+            'perf.password',
+            'users',
+            'rampDurationSec',
+            'p95LimitMs',
+            'startUsersPerSec',
+            'usersPerSecIncrement',
+            'levels',
+            'levelDurationSec',
+            'rampBetweenLevelsSec',
+            'maxFailedPercent',
+            'projectPageSize',
+            'businessCallsPerLogin',
+            'minThinkTimeMs',
+            'maxThinkTimeMs'
+    ]
+    forwardedProps.each { prop ->
+        def value = System.getProperty(prop)
+        if (value != null) {
+            systemProperty (prop, value)
+        }
+    }
+
+    args '-rf', layout.buildDirectory.dir('reports/gatling').get().asFile.absolutePath
+    jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED', '-Xms512m', '-Xmx1024m'
+}

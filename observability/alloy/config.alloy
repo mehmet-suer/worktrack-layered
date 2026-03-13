@@ -1,0 +1,49 @@
+local.file_match "worktrack_logs" {
+  path_targets = [
+    {
+      __path__ = "/var/log/worktrack/*.json",
+        job         = "worktrack",
+        application = "worktrack",
+        environment = "local",
+    },
+  ]
+}
+
+loki.source.file "worktrack_logs" {
+  targets    = local.file_match.worktrack_logs.targets
+  forward_to = [loki.process.worktrack.receiver]
+}
+
+loki.process "worktrack" {
+  stage.json {
+    expressions = {
+      level       = "level",
+      logger_name = "logger_name",
+      message     = "message",
+      traceId     = "traceId",
+      spanId      = "spanId",
+      httpMethod  = "httpMethod",
+      httpPath    = "httpPath",
+      httpStatus  = "httpStatus",
+      durationMs  = "durationMs",
+      requestId   = "requestId",
+      userId      = "userId",
+      application = "application",
+    }
+  }
+
+  stage.labels {
+    values = {
+      level = "level",
+      application = "application",
+    }
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

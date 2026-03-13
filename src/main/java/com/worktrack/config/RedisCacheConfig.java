@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.cache.interceptor.SimpleCacheErrorHandler;
 import org.springframework.cache.support.NoOpCacheManager;
@@ -26,7 +27,7 @@ import java.util.Map;
 
 @Configuration
 @EnableCaching
-public class RedisCacheConfig {
+public class RedisCacheConfig implements CachingConfigurer {
     private final Logger logger = LoggerFactory.getLogger(RedisCacheConfig.class);
 
     @Bean
@@ -68,7 +69,8 @@ public class RedisCacheConfig {
 
 
     @Bean
-    public CacheErrorHandler cacheErrorHandler() {
+    @Override
+    public CacheErrorHandler errorHandler() {
         return new SimpleCacheErrorHandler() {
 
             @Override

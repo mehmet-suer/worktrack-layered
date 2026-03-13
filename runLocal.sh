@@ -51,7 +51,7 @@ done
 
 if [ "$START_OBSERVABILITY" = true ]; then
   echo "Starting observability stack..."
-  mkdir -p "$DATA_DIR"/{grafana-data,prometheus-data,tempo-data,loki-data}
+  mkdir -p "$DATA_DIR"/{grafana-data,prometheus-data,tempo-data,loki-data,alloy-data}
   export OBSERVABILITY_DATA="$DATA_DIR"
 
   cd "$PROJECT_ROOT/observability"

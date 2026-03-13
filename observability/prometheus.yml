@@ -6,10 +6,13 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: springboot
-    metrics_path: /actuator/prometheus  #parse this endpoint
+  - job_name: worktrack
+    metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['host.docker.internal:8000']
+        labels:
+          application: worktrack
+          environment: local
 
 rule_files:
   - "alerts/*.yml"

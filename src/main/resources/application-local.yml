@@ -12,7 +12,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
 
   cache:
     type: redis
@@ -22,7 +22,7 @@ spring:
 
 jwt:
   secret: ${jwt.secret:bCZ0MWB9STlcNV1MN2xyNClZVm1OV1hTcF8kWS42L1M=}
-  expiration: 60000
+  expiration: 600000
 
 management:
   metrics:

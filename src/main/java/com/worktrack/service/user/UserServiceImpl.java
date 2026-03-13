@@ -15,6 +15,8 @@ import com.worktrack.mapper.UserResponseMapper;
 import com.worktrack.repo.specification.Spec;
 import com.worktrack.repo.user.UserRepository;
 import com.worktrack.repo.user.specification.UserSpecifications;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,6 +36,8 @@ import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserResponseMapper userResponseMapper;
@@ -123,7 +127,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private void clearUserCache(String username) {
         var byUsername = cacheManager.getCache(CacheNames.USERS_BY_USERNAME);
-        if (byUsername != null) byUsername.evict(username);
+        if (byUsername == null) {
+            return;
+        }
+        try {
+            byUsername.evict(username);
+        } catch (RuntimeException ex) {
+            logger.warn("Cache EVICT skipped for cache={} key={} cause={}",
+                    CacheNames.USERS_BY_USERNAME, username, ex.getMessage());
+        }
     }
 
     @Transactional

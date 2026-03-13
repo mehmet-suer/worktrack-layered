@@ -1,3 +1,2 @@
 rootProject.name = 'worktrack-v1-layered'
-include 'integration-test'
-
+include('integration-test', 'performance-test')
