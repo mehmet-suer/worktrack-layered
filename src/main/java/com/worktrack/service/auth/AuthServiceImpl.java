@@ -11,23 +11,32 @@ import com.worktrack.service.user.UserService;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationFacade authenticationFacade;
 
-    public AuthServiceImpl(JwtService jwtService, UserService userService, PasswordEncoder passwordEncoder, AuthenticationFacade authenticationFacade) {
+    public AuthServiceImpl(JwtService jwtService,
+                           RefreshTokenService refreshTokenService,
+                           UserService userService,
+                           PasswordEncoder passwordEncoder,
+                           AuthenticationFacade authenticationFacade) {
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationFacade = authenticationFacade;
     }
 
     @WithSpan(SpanNames.AUTH_LOGIN)
+    @Transactional
+    @Override
     public LoginResponse authenticate(String username, String password) {
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
@@ -35,11 +44,29 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new InvalidCredentialsException("Invalid username or password");
         }
-        var generateToken = jwtService.generateToken(user);
-        return new LoginResponse(generateToken.token(), generateToken.type().name(), generateToken.expiresAt());
+        var accessToken = jwtService.generateToken(user);
+        var refreshToken = refreshTokenService.issueRefreshToken(user);
+        return LoginResponse.of(accessToken, refreshToken);
+    }
+
+    @WithSpan(SpanNames.AUTH_REFRESH)
+    @Transactional
+    @Override
+    public LoginResponse refresh(String refreshToken) {
+        var rotation = refreshTokenService.rotate(refreshToken);
+        var accessToken = jwtService.generateToken(rotation.user());
+        return LoginResponse.of(accessToken, rotation.refreshToken());
+    }
+
+    @WithSpan(SpanNames.AUTH_LOGOUT)
+    @Transactional
+    @Override
+    public void logout(String refreshToken) {
+        refreshTokenService.revoke(refreshToken);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponse getCurrentUserInfo() {
         String username = authenticationFacade.getCurrentUsername();
         User user = findUser(username);

@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class AuditableBaseEntity extends StatusAwareBaseEntity {
+public class AuditableBaseEntity extends BaseEntity {
 
     @CreatedBy
     @Column(name = "created_by", updatable = false)

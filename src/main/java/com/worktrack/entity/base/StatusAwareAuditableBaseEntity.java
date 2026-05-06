@@ -10,7 +10,7 @@ import org.hibernate.annotations.ParamDef;
 @MappedSuperclass
 @FilterDef(name = HibernateFilterNames.NOT_DELETED, parameters = @ParamDef(name = HibernateFilterParameters.DELETED_STATUS, type = String.class))
 @Filter(name = HibernateFilterNames.NOT_DELETED, condition = "status != :deletedStatus") //HibernateFilterParameters.DELETED_STATUS
-public abstract class StatusAwareBaseEntity extends BaseEntity {
+public abstract class StatusAwareAuditableBaseEntity extends AuditableBaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

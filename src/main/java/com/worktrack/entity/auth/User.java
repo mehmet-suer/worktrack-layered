@@ -3,11 +3,11 @@ package com.worktrack.entity.auth;
 import java.util.Collection;
 import java.util.List;
 
+import com.worktrack.entity.base.StatusAwareAuditableBaseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.worktrack.entity.base.AuditableBaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +20,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
-public class User extends AuditableBaseEntity implements UserDetails {
+public class User extends StatusAwareAuditableBaseEntity implements UserDetails {
 
     @NotBlank
     @Size(min = 3, max = 50)

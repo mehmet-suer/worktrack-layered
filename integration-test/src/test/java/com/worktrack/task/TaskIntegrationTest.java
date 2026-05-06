@@ -13,6 +13,7 @@ import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.repo.ProjectRepository;
 import com.worktrack.repo.TaskRepository;
+import com.worktrack.repo.auth.RefreshTokenRepository;
 import com.worktrack.repo.user.UserRepository;
 import com.worktrack.util.JsonUtils;
 import com.worktrack.util.UserTestUtils;
@@ -49,10 +50,14 @@ public class TaskIntegrationTest extends AbstractWebIntegrationTest {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
     @BeforeEach
     void setup() {
         taskRepository.deleteAll();
         projectRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
     }
 

@@ -7,6 +7,7 @@ import com.worktrack.dto.response.LoginResponse;
 import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.base.Status;
 import com.worktrack.repo.ProjectRepository;
+import com.worktrack.repo.auth.RefreshTokenRepository;
 import com.worktrack.repo.TaskRepository;
 import com.worktrack.repo.user.UserRepository;
 import com.worktrack.util.JsonUtils;
@@ -47,10 +48,14 @@ public class UserIntegrationTest extends AbstractWebIntegrationTest {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
     @BeforeEach
     void setup() {
         taskRepository.deleteAll();
         projectRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -143,6 +148,7 @@ public class UserIntegrationTest extends AbstractWebIntegrationTest {
             // act - login
             var loginResult = login(request.username(), request.password())
                     .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.refreshToken").isNotEmpty())
                     .andReturn();
             String loginBody = loginResult.getResponse().getContentAsString();
             LoginResponse loginResponse = jsonUtils.fromJsonString(loginBody, LoginResponse.class);

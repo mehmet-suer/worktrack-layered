@@ -9,6 +9,7 @@ import com.worktrack.entity.auth.Role;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.repo.ProjectRepository;
+import com.worktrack.repo.auth.RefreshTokenRepository;
 import com.worktrack.repo.user.UserRepository;
 import com.worktrack.util.JsonUtils;
 import com.worktrack.util.UserTestUtils;
@@ -42,9 +43,13 @@ public class ProjectIntegrationTest extends AbstractWebIntegrationTest {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
     @BeforeEach
     void setup() {
         projectRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
     }
 

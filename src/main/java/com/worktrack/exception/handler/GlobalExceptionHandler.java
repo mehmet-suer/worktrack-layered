@@ -7,6 +7,7 @@ import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.exception.ErrorMessages;
 import com.worktrack.exception.auth.AuthenticationException;
 import com.worktrack.exception.auth.InvalidCredentialsException;
+import com.worktrack.exception.auth.InvalidRefreshTokenException;
 import com.worktrack.exception.user.DuplicateUserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleInvalidCredentials(InvalidCredentialsException ex) {
         return buildResponse(INVALID_CREDENTIAL, "Invalid username or password.", ex);
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleInvalidRefreshToken(InvalidRefreshTokenException ex) {
+        return buildResponse(INVALID_REFRESH_TOKEN, "Invalid or expired refresh token.", ex);
     }
 
 

@@ -3,6 +3,7 @@ package com.worktrack.dto.response;
 public enum ErrorCode {
     AUTHENTICATION_FAILED,
     INVALID_CREDENTIAL,
+    INVALID_REFRESH_TOKEN,
     DUPLICATE_USER,
     ENTITY_NOT_FOUND,
     VALIDATION_ERROR,

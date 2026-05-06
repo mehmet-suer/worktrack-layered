@@ -54,12 +54,14 @@ This repository is not a product. It is a showcase project to practice and demon
 - DB: `worktrack_db` on `localhost:3307`
 - Credentials: `worktrack / worktrack` (override with `db.username` / `db.password`)
 - JWT: set `jwt.secret` via env or config (must be Base64; local default provided)
+- Refresh token lifetime: configured via `jwt.refresh-expiration`
 
 ## What’s Demonstrated
 
 - User registration with validation and duplicate checks
 - Centralized error handling with meaningful error codes
 - Secure password storage (hashing)
+- Access-token plus refresh-token authentication flow
 - Role-based access control
 - Caching, retry, and observability hooks
 - Automated CI/CD pipeline and cloud-native deployment

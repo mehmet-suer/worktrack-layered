@@ -1,6 +1,7 @@
 package com.worktrack.controller;
 
 import com.worktrack.dto.request.auth.LoginRequest;
+import com.worktrack.dto.request.auth.RefreshTokenRequest;
 import com.worktrack.dto.response.LoginResponse;
 import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.service.auth.AuthService;
@@ -30,6 +31,19 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @SecurityRequirements
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        LoginResponse response = authService.refresh(request.refreshToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @SecurityRequirements
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.logout(request.refreshToken());
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getUserName() {

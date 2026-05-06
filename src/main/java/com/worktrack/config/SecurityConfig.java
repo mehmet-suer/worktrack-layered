@@ -62,7 +62,9 @@ public class SecurityConfig {
                                         "/actuator/prometheus",
                                         "/actuator/health/liveness",
                                         "/actuator/health/readiness",
-                                        "/layered/api/v1/auth/login")
+                                        "/layered/api/v1/auth/login",
+                                        "/layered/api/v1/auth/refresh",
+                                        "/layered/api/v1/auth/logout")
                                 .permitAll()
                                 .anyRequest().authenticated()
                 ).exceptionHandling(exceptionHandlingConfigurer ->

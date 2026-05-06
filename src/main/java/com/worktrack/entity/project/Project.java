@@ -1,14 +1,14 @@
 package com.worktrack.entity.project;
 
 import com.worktrack.entity.auth.User;
-import com.worktrack.entity.base.AuditableBaseEntity;
+import com.worktrack.entity.base.StatusAwareAuditableBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "project")
-public class Project extends AuditableBaseEntity {
+public class Project extends StatusAwareAuditableBaseEntity {
 
     @NotBlank
     @Size(max = 255)
