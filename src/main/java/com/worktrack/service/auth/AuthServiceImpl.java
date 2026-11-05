@@ -1,6 +1,6 @@
 package com.worktrack.service.auth;
 
-import com.worktrack.dto.response.LoginResponse;
+import com.worktrack.dto.response.AuthTokensResponse;
 import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.User;
 import com.worktrack.exception.auth.InvalidCredentialsException;
@@ -37,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
     @WithSpan(SpanNames.AUTH_LOGIN)
     @Transactional
     @Override
-    public LoginResponse authenticate(String username, String password) {
+    public AuthTokensResponse authenticate(String username, String password) {
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
@@ -46,16 +46,16 @@ public class AuthServiceImpl implements AuthService {
         }
         var accessToken = jwtService.generateToken(user);
         var refreshToken = refreshTokenService.issueRefreshToken(user);
-        return LoginResponse.of(accessToken, refreshToken);
+        return AuthTokensResponse.of(accessToken, refreshToken);
     }
 
     @WithSpan(SpanNames.AUTH_REFRESH)
     @Transactional
     @Override
-    public LoginResponse refresh(String refreshToken) {
+    public AuthTokensResponse refresh(String refreshToken) {
         var rotation = refreshTokenService.rotate(refreshToken);
         var accessToken = jwtService.generateToken(rotation.user());
-        return LoginResponse.of(accessToken, rotation.refreshToken());
+        return AuthTokensResponse.of(accessToken, rotation.refreshToken());
     }
 
     @WithSpan(SpanNames.AUTH_LOGOUT)

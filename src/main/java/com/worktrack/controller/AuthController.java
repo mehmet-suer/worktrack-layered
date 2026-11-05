@@ -2,7 +2,7 @@ package com.worktrack.controller;
 
 import com.worktrack.dto.request.auth.LoginRequest;
 import com.worktrack.dto.request.auth.RefreshTokenRequest;
-import com.worktrack.dto.response.LoginResponse;
+import com.worktrack.dto.response.AuthTokensResponse;
 import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -26,15 +26,15 @@ public class AuthController {
     @SecurityRequirements
     @PreAuthorize("isAnonymous()")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = authService.authenticate(request.username(), request.password());
+    public ResponseEntity<AuthTokensResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthTokensResponse response = authService.authenticate(request.username(), request.password());
         return ResponseEntity.ok(response);
     }
 
     @SecurityRequirements
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        LoginResponse response = authService.refresh(request.refreshToken());
+    public ResponseEntity<AuthTokensResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        AuthTokensResponse response = authService.refresh(request.refreshToken());
         return ResponseEntity.ok(response);
     }
 

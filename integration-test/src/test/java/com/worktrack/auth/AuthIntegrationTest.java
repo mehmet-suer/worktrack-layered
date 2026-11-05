@@ -4,7 +4,7 @@ import com.worktrack.base.AbstractWebIntegrationTest;
 import com.worktrack.dto.request.auth.LoginRequest;
 import com.worktrack.dto.request.auth.RefreshTokenRequest;
 import com.worktrack.dto.request.user.RegisterUserRequest;
-import com.worktrack.dto.response.LoginResponse;
+import com.worktrack.dto.response.AuthTokensResponse;
 import com.worktrack.entity.auth.Role;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
@@ -76,23 +76,23 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
         RegisterUserRequest request = UserTestUtils.dummyRegistrationRequest();
         register(request).andExpect(status().isOk());
 
-        LoginResponse loginResponse = loginAndRead(request.username(), request.password());
-        assertThat(loginResponse.refreshToken()).isNotBlank();
+        AuthTokensResponse loginResponse = loginAndRead(request.username(), request.password());
+        assertThat(loginResponse.refreshToken().token()).isNotBlank();
 
-        var refreshResult = refresh(loginResponse.refreshToken())
+        var refreshResult = refresh(loginResponse.refreshToken().token())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+                .andExpect(jsonPath("$.accessToken.token").isNotEmpty())
+                .andExpect(jsonPath("$.refreshToken.token").isNotEmpty())
                 .andReturn();
 
-        LoginResponse refreshed = jsonUtils.fromJsonString(
+        AuthTokensResponse refreshed = jsonUtils.fromJsonString(
                 refreshResult.getResponse().getContentAsString(),
-                LoginResponse.class
+                AuthTokensResponse.class
         );
 
-        assertThat(refreshed.refreshToken()).isNotEqualTo(loginResponse.refreshToken());
+        assertThat(refreshed.refreshToken().token()).isNotEqualTo(loginResponse.refreshToken().token());
 
-        refresh(loginResponse.refreshToken())
+        refresh(loginResponse.refreshToken().token())
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_REFRESH_TOKEN.name()));
     }
@@ -103,12 +103,12 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
         RegisterUserRequest request = UserTestUtils.dummyRegistrationRequest();
         register(request).andExpect(status().isOk());
 
-        LoginResponse loginResponse = loginAndRead(request.username(), request.password());
+        AuthTokensResponse loginResponse = loginAndRead(request.username(), request.password());
 
-        logout(loginResponse.refreshToken())
+        logout(loginResponse.refreshToken().token())
                 .andExpect(status().isNoContent());
 
-        refresh(loginResponse.refreshToken())
+        refresh(loginResponse.refreshToken().token())
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_REFRESH_TOKEN.name()));
     }
@@ -119,12 +119,12 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
         RegisterUserRequest request = UserTestUtils.dummyRegistrationRequest();
         register(request).andExpect(status().isOk());
 
-        LoginResponse loginResponse = loginAndRead(request.username(), request.password());
+        AuthTokensResponse loginResponse = loginAndRead(request.username(), request.password());
 
-        refresh(loginResponse.refreshToken(), "Bearer definitely-not-a-jwt")
+        refresh(loginResponse.refreshToken().token(), "Bearer definitely-not-a-jwt")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.refreshToken").isNotEmpty());
+                .andExpect(jsonPath("$.accessToken.token").isNotEmpty())
+                .andExpect(jsonPath("$.refreshToken.token").isNotEmpty());
     }
 
     @Test
@@ -133,12 +133,12 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
         RegisterUserRequest request = UserTestUtils.dummyRegistrationRequest();
         register(request).andExpect(status().isOk());
 
-        LoginResponse loginResponse = loginAndRead(request.username(), request.password());
+        AuthTokensResponse loginResponse = loginAndRead(request.username(), request.password());
 
-        logout(loginResponse.refreshToken(), "Bearer " + expiredAccessToken(request.username(), Role.EMPLOYEE))
+        logout(loginResponse.refreshToken().token(), "Bearer " + expiredAccessToken(request.username(), Role.EMPLOYEE))
                 .andExpect(status().isNoContent());
 
-        refresh(loginResponse.refreshToken())
+        refresh(loginResponse.refreshToken().token())
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_REFRESH_TOKEN.name()));
     }
@@ -149,12 +149,12 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
         RegisterUserRequest request = UserTestUtils.dummyRegistrationRequest();
         register(request).andExpect(status().isOk());
 
-        LoginResponse loginResponse = loginAndRead(request.username(), request.password());
+        AuthTokensResponse loginResponse = loginAndRead(request.username(), request.password());
         var storedToken = refreshTokenRepository.findAll().stream().findFirst().orElseThrow();
         storedToken.setExpiresAt(Instant.now().minusSeconds(5));
         refreshTokenRepository.saveAndFlush(storedToken);
 
-        refresh(loginResponse.refreshToken())
+        refresh(loginResponse.refreshToken().token())
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_REFRESH_TOKEN.name()));
     }
@@ -165,17 +165,17 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
         RegisterUserRequest request = UserTestUtils.dummyRegistrationRequest();
         register(request).andExpect(status().isOk());
 
-        LoginResponse loginResponse = loginAndRead(request.username(), request.password());
+        AuthTokensResponse loginResponse = loginAndRead(request.username(), request.password());
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         CountDownLatch ready = new CountDownLatch(2);
         CountDownLatch start = new CountDownLatch(1);
 
         try {
             Future<RefreshAttempt> firstAttempt = executorService.submit(
-                    () -> attemptConcurrentRefresh(loginResponse.refreshToken(), ready, start)
+                    () -> attemptConcurrentRefresh(loginResponse.refreshToken().token(), ready, start)
             );
             Future<RefreshAttempt> secondAttempt = executorService.submit(
-                    () -> attemptConcurrentRefresh(loginResponse.refreshToken(), ready, start)
+                    () -> attemptConcurrentRefresh(loginResponse.refreshToken().token(), ready, start)
             );
 
             assertThat(ready.await(5, TimeUnit.SECONDS)).isTrue();
@@ -190,7 +190,7 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
             assertThat(attempts).filteredOn(attempt -> !attempt.successful()).hasSize(1);
             assertThat(attempts).filteredOn(RefreshAttempt::successful)
                     .extracting(RefreshAttempt::refreshToken)
-                    .doesNotContain(loginResponse.refreshToken());
+                    .doesNotContain(loginResponse.refreshToken().token());
             assertThat(attempts).filteredOn(attempt -> !attempt.successful())
                     .allSatisfy(attempt -> assertThat(attempt.error()).isInstanceOf(InvalidRefreshTokenException.class));
             assertThat(refreshTokenRepository.findAll()).hasSize(2);
@@ -208,14 +208,14 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
         RegisterUserRequest request = UserTestUtils.dummyRegistrationRequest();
         register(request).andExpect(status().isOk());
 
-        LoginResponse loginResponse = loginAndRead(request.username(), request.password());
+        AuthTokensResponse loginResponse = loginAndRead(request.username(), request.password());
 
         User user = userRepository.findByUsernameAndStatusNot(request.username(), Status.DELETED)
                 .orElseThrow();
         user.setStatus(Status.DELETED);
         userRepository.save(user);
 
-        refresh(loginResponse.refreshToken())
+        refresh(loginResponse.refreshToken().token())
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_REFRESH_TOKEN.name()));
     }
@@ -238,17 +238,17 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
                 .content(jsonUtils.asJsonString(request)));
     }
 
-    private LoginResponse loginAndRead(String username, String password) throws Exception {
+    private AuthTokensResponse loginAndRead(String username, String password) throws Exception {
         var result = mockMvc.perform(post("/layered/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(jsonUtils.asJsonString(new LoginRequest(username, password))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+                .andExpect(jsonPath("$.accessToken.token").isNotEmpty())
+                .andExpect(jsonPath("$.refreshToken.token").isNotEmpty())
                 .andReturn();
 
-        return jsonUtils.fromJsonString(result.getResponse().getContentAsString(), LoginResponse.class);
+        return jsonUtils.fromJsonString(result.getResponse().getContentAsString(), AuthTokensResponse.class);
     }
 
     private ResultActions refresh(String refreshToken) throws Exception {
@@ -303,7 +303,7 @@ public class AuthIntegrationTest extends AbstractWebIntegrationTest {
             if (!start.await(5, TimeUnit.SECONDS)) {
                 return RefreshAttempt.failure(new IllegalStateException("Timed out waiting to start refresh race"));
             }
-            return RefreshAttempt.success(authService.refresh(refreshToken).refreshToken());
+            return RefreshAttempt.success(authService.refresh(refreshToken).refreshToken().token());
         } catch (Exception ex) {
             return RefreshAttempt.failure(ex);
         }

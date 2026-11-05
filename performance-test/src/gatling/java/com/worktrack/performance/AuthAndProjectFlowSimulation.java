@@ -87,7 +87,7 @@ public class AuthAndProjectFlowSimulation extends Simulation {
                     .post("/layered/api/v1/auth/login")
                     .body(StringBody(loginRequestBody))
                     .check(status().is(200))
-                    .check(jsonPath("$.token").saveAs("token"))
+                    .check(jsonPath("$.accessToken.token").saveAs("token"))
     ).exec(exitHereIfFailed());
 
     private final ChainBuilder authMe = exec(

@@ -1,6 +1,6 @@
 package com.worktrack.service.auth;
 
-import com.worktrack.dto.response.LoginResponse;
+import com.worktrack.dto.response.AuthTokensResponse;
 import com.worktrack.dto.security.GeneratedToken;
 import com.worktrack.dto.security.TokenType;
 import com.worktrack.entity.auth.User;
@@ -58,14 +58,14 @@ public class AuthServiceImplTest {
         when(jwtService.generateToken(user)).thenReturn(accessToken);
         when(refreshTokenService.issueRefreshToken(user)).thenReturn(refreshToken);
 
-        LoginResponse response = authService.authenticate(user.getUsername(), "plain-password");
+        AuthTokensResponse response = authService.authenticate(user.getUsername(), "plain-password");
 
-        assertEquals("access-token", response.token());
-        assertEquals("BEARER", response.type());
-        assertEquals(111L, response.expiresAt());
-        assertEquals("refresh-token", response.refreshToken());
-        assertEquals("REFRESH", response.refreshTokenType());
-        assertEquals(222L, response.refreshExpiresAt());
+        assertEquals("access-token", response.accessToken().token());
+        assertEquals("BEARER", response.accessToken().type());
+        assertEquals(111L, response.accessToken().expiresAt());
+        assertEquals("refresh-token", response.refreshToken().token());
+        assertEquals("REFRESH", response.refreshToken().type());
+        assertEquals(222L, response.refreshToken().expiresAt());
 
         verify(userService).findByUsername(user.getUsername());
         verify(passwordEncoder).matches("plain-password", user.getPassword());
@@ -84,11 +84,11 @@ public class AuthServiceImplTest {
                 .thenReturn(new RefreshTokenService.RotationResult(user, refreshToken));
         when(jwtService.generateToken(user)).thenReturn(accessToken);
 
-        LoginResponse response = authService.refresh("old-refresh-token");
+        AuthTokensResponse response = authService.refresh("old-refresh-token");
 
-        assertEquals("new-access-token", response.token());
-        assertEquals("new-refresh-token", response.refreshToken());
-        assertEquals(444L, response.refreshExpiresAt());
+        assertEquals("new-access-token", response.accessToken().token());
+        assertEquals("new-refresh-token", response.refreshToken().token());
+        assertEquals(444L, response.refreshToken().expiresAt());
 
         verify(refreshTokenService).rotate("old-refresh-token");
         verify(jwtService).generateToken(user);

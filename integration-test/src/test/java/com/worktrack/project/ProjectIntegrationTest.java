@@ -4,7 +4,7 @@ import com.worktrack.base.AbstractWebIntegrationTest;
 import com.worktrack.dto.request.auth.LoginRequest;
 import com.worktrack.dto.request.project.CreateProjectRequest;
 import com.worktrack.dto.request.user.RegisterUserRequest;
-import com.worktrack.dto.response.LoginResponse;
+import com.worktrack.dto.response.AuthTokensResponse;
 import com.worktrack.entity.auth.Role;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
@@ -127,12 +127,12 @@ public class ProjectIntegrationTest extends AbstractWebIntegrationTest {
         var loginResult = login(registerRequest.username(), registerRequest.password())
                 .andExpect(status().isOk())
                 .andReturn();
-        LoginResponse loginResponse = jsonUtils.fromJsonString(
+        AuthTokensResponse loginResponse = jsonUtils.fromJsonString(
                 loginResult.getResponse().getContentAsString(),
-                LoginResponse.class
+                AuthTokensResponse.class
         );
 
-        return new AuthContext(loginResponse.token(), user.getId());
+        return new AuthContext(loginResponse.accessToken().token(), user.getId());
     }
 
     private ResultActions register(RegisterUserRequest req) throws Exception {

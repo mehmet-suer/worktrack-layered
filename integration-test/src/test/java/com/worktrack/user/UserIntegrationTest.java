@@ -3,7 +3,7 @@ package com.worktrack.user;
 
 import com.worktrack.base.AbstractWebIntegrationTest;
 import com.worktrack.dto.request.user.RegisterUserRequest;
-import com.worktrack.dto.response.LoginResponse;
+import com.worktrack.dto.response.AuthTokensResponse;
 import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.base.Status;
 import com.worktrack.repo.ProjectRepository;
@@ -148,14 +148,14 @@ public class UserIntegrationTest extends AbstractWebIntegrationTest {
             // act - login
             var loginResult = login(request.username(), request.password())
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+                    .andExpect(jsonPath("$.refreshToken.token").isNotEmpty())
                     .andReturn();
             String loginBody = loginResult.getResponse().getContentAsString();
-            LoginResponse loginResponse = jsonUtils.fromJsonString(loginBody, LoginResponse.class);
+            AuthTokensResponse loginResponse = jsonUtils.fromJsonString(loginBody, AuthTokensResponse.class);
 
             // act - access protected endpoint
             var meResult = mockMvc.perform(get("/layered/api/v1/auth/me")
-                            .header("Authorization", "Bearer " + loginResponse.token())
+                            .header("Authorization", "Bearer " + loginResponse.accessToken().token())
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andReturn();
