@@ -1,6 +1,7 @@
 package com.worktrack.security.jwt;
 
 
+import com.worktrack.security.policy.AuthenticationRequestPolicy;
 import com.worktrack.service.user.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,11 +23,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserService userService;
     private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final AuthenticationRequestPolicy authenticationRequestPolicy;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserService userService, AuthenticationEntryPoint authenticationEntryPoint) {
+    public JwtAuthenticationFilter(JwtService jwtService,
+                                   UserService userService,
+                                   AuthenticationEntryPoint authenticationEntryPoint,
+                                   AuthenticationRequestPolicy authenticationRequestPolicy) {
         this.jwtService = jwtService;
         this.userService = userService;
         this.authenticationEntryPoint = authenticationEntryPoint;
+        this.authenticationRequestPolicy = authenticationRequestPolicy;
     }
 
 
@@ -67,10 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return "POST".equals(request.getMethod())
-                && (path.equals("/layered/api/v1/auth/refresh")
-                || path.equals("/layered/api/v1/auth/logout"));
+        return authenticationRequestPolicy.ignoresAccessToken(request);
     }
 
 }

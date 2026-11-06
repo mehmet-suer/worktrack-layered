@@ -3,6 +3,7 @@ package com.worktrack.config;
 import com.worktrack.security.handler.JsonAccessDeniedHandler;
 import com.worktrack.security.handler.JsonAuthenticationEntryPoint;
 import com.worktrack.security.jwt.JwtAuthenticationFilter;
+import com.worktrack.security.policy.AuthenticationRequestPolicy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -24,13 +25,16 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final JsonAuthenticationEntryPoint jsonAuthenticationEntryPoint;
     private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
+    private final AuthenticationRequestPolicy authenticationRequestPolicy;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,
                           JsonAuthenticationEntryPoint jsonAuthenticationEntryPoint,
-                          JsonAccessDeniedHandler jsonAccessDeniedHandler) {
+                          JsonAccessDeniedHandler jsonAccessDeniedHandler,
+                          AuthenticationRequestPolicy authenticationRequestPolicy) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.jsonAuthenticationEntryPoint = jsonAuthenticationEntryPoint;
         this.jsonAccessDeniedHandler = jsonAccessDeniedHandler;
+        this.authenticationRequestPolicy = authenticationRequestPolicy;
     }
 
     @Bean
@@ -56,15 +60,7 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(
-                                        "/layered/api/v1/users/register",
-                                        "/actuator/health",
-                                        "/actuator/prometheus",
-                                        "/actuator/health/liveness",
-                                        "/actuator/health/readiness",
-                                        "/layered/api/v1/auth/login",
-                                        "/layered/api/v1/auth/refresh",
-                                        "/layered/api/v1/auth/logout")
+                        auth.requestMatchers(authenticationRequestPolicy.publicRequests())
                                 .permitAll()
                                 .anyRequest().authenticated()
                 ).exceptionHandling(exceptionHandlingConfigurer ->
