@@ -4,7 +4,6 @@ import com.worktrack.common.id.ProjectTaskKey;
 import com.worktrack.dto.request.project.AssignTaskRequest;
 import com.worktrack.dto.request.project.CreateTaskRequest;
 import com.worktrack.dto.response.project.TaskResponse;
-import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.User;
 import com.worktrack.entity.base.Status;
 import com.worktrack.entity.project.Project;
@@ -12,6 +11,7 @@ import com.worktrack.entity.project.Task;
 import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.infra.observability.SpanNames;
 import com.worktrack.infra.retry.TransientDbRetry;
+import com.worktrack.mapper.TaskResponseMapper;
 import com.worktrack.repo.TaskRepository;
 import com.worktrack.service.user.UserService;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -25,15 +25,16 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final ProjectService projectService;
     private final UserService userService;
+    private final TaskResponseMapper taskResponseMapper;
 
     public TaskServiceImpl(TaskRepository taskRepository,
                            ProjectService projectService,
-                           UserService userService) {
+                           UserService userService,
+                           TaskResponseMapper taskResponseMapper) {
         this.taskRepository = taskRepository;
         this.projectService = projectService;
         this.userService = userService;
-
-
+        this.taskResponseMapper = taskResponseMapper;
     }
 
     @WithSpan(SpanNames.TASK_CREATE)
@@ -46,11 +47,11 @@ public class TaskServiceImpl implements TaskService {
                 ? createTaskWithAssignedUser(request, project)
                 : createTaskWithoutAssignedUser(request, project);
 
-        return toResponse(task);
+        return taskResponseMapper.toDto(task);
     }
 
     private Task createTaskWithAssignedUser(CreateTaskRequest request, Project project) {
-        User assignedTo = userService.findEntityByIdForced(request.assignedTo());
+        User assignedTo = userService.requireActiveById(request.assignedTo());
         Task task = new Task(request.title(), request.description(), project, assignedTo);
         taskRepository.save(task);
         return task;
@@ -65,11 +66,11 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public TaskResponse assignTask(ProjectTaskKey projectTaskKey, AssignTaskRequest request) {
         Task task = findByIdAndProjectIdForced(projectTaskKey);
-        User user = userService.findEntityByIdForced(request.userId());
+        User user = userService.requireActiveById(request.userId());
         task.assignTo(user);
 
         taskRepository.save(task);
-        return toResponse(task);
+        return taskResponseMapper.toDto(task);
     }
 
     @Override
@@ -89,7 +90,7 @@ public class TaskServiceImpl implements TaskService {
     public List<TaskResponse> getTasksByProject(Long projectId) {
         return taskRepository.findAllActivesByProjectId(projectId)
                 .stream()
-                .map(this::toResponse)
+                .map(taskResponseMapper::toDto)
                 .toList();
     }
 
@@ -101,19 +102,4 @@ public class TaskServiceImpl implements TaskService {
                                     // The entity will be automatically updated when the transaction is committed.
     }
 
-
-
-    private TaskResponse toResponse(Task task) {
-        UserResponse userResponse = (task.getAssignedTo() != null)
-                ? userService.toDto(task.getAssignedTo())
-                : null;
-
-        return new TaskResponse(
-                task.getId(),
-                task.getTitle(),
-                task.getDescription(),
-                task.getTaskStatus().name(),
-                userResponse
-        );
-    }
 }

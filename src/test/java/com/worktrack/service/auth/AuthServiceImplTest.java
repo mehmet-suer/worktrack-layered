@@ -4,8 +4,9 @@ import com.worktrack.dto.response.AuthTokensResponse;
 import com.worktrack.dto.security.GeneratedToken;
 import com.worktrack.dto.security.TokenType;
 import com.worktrack.entity.auth.User;
+import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.exception.auth.InvalidCredentialsException;
-import com.worktrack.security.auth.AuthenticationFacade;
+import com.worktrack.security.auth.CurrentUserResolver;
 import com.worktrack.security.jwt.JwtService;
 import com.worktrack.service.user.UserService;
 import com.worktrack.util.UserTestUtils;
@@ -16,8 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
@@ -41,7 +40,7 @@ public class AuthServiceImplTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private AuthenticationFacade authenticationFacade;
+    private CurrentUserResolver currentUserResolver;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -53,7 +52,7 @@ public class AuthServiceImplTest {
         GeneratedToken accessToken = new GeneratedToken("access-token", TokenType.BEARER, 111L);
         GeneratedToken refreshToken = new GeneratedToken("refresh-token", TokenType.REFRESH, 222L);
 
-        when(userService.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.requireActiveByUsername(user.getUsername())).thenReturn(user);
         when(passwordEncoder.matches("plain-password", user.getPassword())).thenReturn(true);
         when(jwtService.generateToken(user)).thenReturn(accessToken);
         when(refreshTokenService.issueRefreshToken(user)).thenReturn(refreshToken);
@@ -67,7 +66,7 @@ public class AuthServiceImplTest {
         assertEquals("REFRESH", response.refreshToken().type());
         assertEquals(222L, response.refreshToken().expiresAt());
 
-        verify(userService).findByUsername(user.getUsername());
+        verify(userService).requireActiveByUsername(user.getUsername());
         verify(passwordEncoder).matches("plain-password", user.getPassword());
         verify(jwtService).generateToken(user);
         verify(refreshTokenService).issueRefreshToken(user);
@@ -99,7 +98,7 @@ public class AuthServiceImplTest {
     void authenticateShouldRejectInvalidPassword() {
         User user = UserTestUtils.dummyUser();
 
-        when(userService.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.requireActiveByUsername(user.getUsername())).thenReturn(user);
         when(passwordEncoder.matches("wrong-password", user.getPassword())).thenReturn(false);
 
         assertThrowsExactly(
@@ -107,7 +106,7 @@ public class AuthServiceImplTest {
                 () -> authService.authenticate(user.getUsername(), "wrong-password")
         );
 
-        verify(userService).findByUsername(user.getUsername());
+        verify(userService).requireActiveByUsername(user.getUsername());
         verify(passwordEncoder).matches("wrong-password", user.getPassword());
         verifyNoInteractions(jwtService, refreshTokenService);
     }
@@ -118,6 +117,21 @@ public class AuthServiceImplTest {
         authService.logout("refresh-token");
 
         verify(refreshTokenService).revoke("refresh-token");
-        verifyNoInteractions(jwtService, userService, passwordEncoder, authenticationFacade);
+        verifyNoInteractions(jwtService, userService, passwordEncoder, currentUserResolver);
+    }
+
+    @Test
+    @DisplayName("authenticate should hide a missing username behind invalid credentials")
+    void authenticateShouldRejectMissingUsername() {
+        when(userService.requireActiveByUsername("missing"))
+                .thenThrow(new EntityNotFoundException("User not found"));
+
+        InvalidCredentialsException exception = assertThrowsExactly(
+                InvalidCredentialsException.class,
+                () -> authService.authenticate("missing", "password")
+        );
+
+        assertEquals("Invalid username or password", exception.getMessage());
+        verifyNoInteractions(passwordEncoder, jwtService, refreshTokenService);
     }
 }

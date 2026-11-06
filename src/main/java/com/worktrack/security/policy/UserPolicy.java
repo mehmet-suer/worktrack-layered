@@ -1,15 +1,15 @@
 package com.worktrack.security.policy;
 
 import com.worktrack.entity.auth.Role;
-import com.worktrack.security.auth.AuthenticationFacade;
+import com.worktrack.security.auth.CurrentUserResolver;
 import org.springframework.stereotype.Component;
 
 @Component("userPolicy")
 public class UserPolicy {
-    private final AuthenticationFacade authenticationFacade;
+    private final CurrentUserResolver currentUserResolver;
 
-    public UserPolicy(AuthenticationFacade auth) {
-        this.authenticationFacade = auth;
+    public UserPolicy(CurrentUserResolver currentUserResolver) {
+        this.currentUserResolver = currentUserResolver;
     }
 
     /**
@@ -62,11 +62,11 @@ public class UserPolicy {
     }
 
     private boolean isLoggedInUser(Long userId) {
-        return authenticationFacade.getCurrentUserId().equals(userId);
+        return currentUserResolver.getCurrentUserId().equals(userId);
     }
 
     private boolean isAdmin() {
-        return authenticationFacade.hasRole(Role.ADMIN);
+        return currentUserResolver.hasRole(Role.ADMIN);
     }
 
 }

@@ -3,9 +3,10 @@ package com.worktrack.service.auth;
 import com.worktrack.dto.response.AuthTokensResponse;
 import com.worktrack.dto.response.user.UserResponse;
 import com.worktrack.entity.auth.User;
+import com.worktrack.exception.EntityNotFoundException;
 import com.worktrack.exception.auth.InvalidCredentialsException;
 import com.worktrack.infra.observability.SpanNames;
-import com.worktrack.security.auth.AuthenticationFacade;
+import com.worktrack.security.auth.CurrentUserResolver;
 import com.worktrack.security.jwt.JwtService;
 import com.worktrack.service.user.UserService;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -20,26 +21,25 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationFacade authenticationFacade;
+    private final CurrentUserResolver currentUserResolver;
 
     public AuthServiceImpl(JwtService jwtService,
                            RefreshTokenService refreshTokenService,
                            UserService userService,
                            PasswordEncoder passwordEncoder,
-                           AuthenticationFacade authenticationFacade) {
+                           CurrentUserResolver currentUserResolver) {
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
-        this.authenticationFacade = authenticationFacade;
+        this.currentUserResolver = currentUserResolver;
     }
 
     @WithSpan(SpanNames.AUTH_LOGIN)
     @Transactional
     @Override
     public AuthTokensResponse authenticate(String username, String password) {
-        User user = userService.findByUsername(username)
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
+        User user = findUserForAuthentication(username);
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new InvalidCredentialsException("Invalid username or password");
@@ -68,15 +68,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public UserResponse getCurrentUserInfo() {
-        String username = authenticationFacade.getCurrentUsername();
-        User user = findUser(username);
-        return userService.toDto(user);
+        return userService.findByIdForced(currentUserResolver.getCurrentUserId());
     }
 
-
-    private User findUser(String username) {
-        return userService.findByUsername(username)
-                .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+    private User findUserForAuthentication(String username) {
+        try {
+            return userService.requireActiveByUsername(username);
+        } catch (EntityNotFoundException ex) {
+            throw new InvalidCredentialsException("Invalid username or password");
+        }
     }
 
 }

@@ -83,7 +83,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private User validateOwningUser(RefreshToken refreshToken) {
         try {
-            return userService.findEntityByIdForced(refreshToken.getUser().getId());
+            return userService.requireActiveById(refreshToken.getUser().getId());
         } catch (EntityNotFoundException ex) {
             throw new InvalidRefreshTokenException("Invalid refresh token", ex);
         }

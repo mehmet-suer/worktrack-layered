@@ -7,7 +7,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectResponseMapper {
-    public ProjectResponse toDto(Project project, UserResponse owner) {
+    private final UserResponseMapper userResponseMapper;
+
+    public ProjectResponseMapper(UserResponseMapper userResponseMapper) {
+        this.userResponseMapper = userResponseMapper;
+    }
+
+    public ProjectResponse toDto(Project project) {
+        UserResponse owner = project.getOwner() == null
+                ? null
+                : userResponseMapper.toDto(project.getOwner());
+
         return new ProjectResponse(
                 project.getId(),
                 project.getName(),
@@ -19,9 +29,5 @@ public class ProjectResponseMapper {
                 project.getCreatedBy(),
                 project.getUpdatedBy()
         );
-    }
-
-    public ProjectResponse toDto(Project project) {
-        return toDto(project, null);
     }
 }

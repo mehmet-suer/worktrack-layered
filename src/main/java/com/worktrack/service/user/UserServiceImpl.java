@@ -20,22 +20,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-
-
 
 @Service
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
@@ -45,7 +38,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           UserResponseMapper userMapper, CacheManager cacheManager) {
+                           UserResponseMapper userMapper,
+                           CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userResponseMapper = userMapper;
@@ -74,20 +68,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return passwordEncoder.encode(password);
     }
 
-
-    private Optional<UserResponse> findById(Long id) {
-        return userRepository.findActiveById(id).map(userResponseMapper::toDto);
-    }
-
-    @Cacheable(cacheNames = CacheNames.USERS_BY_USERNAME,
-            key = "#username",
-            unless = "#result == null")
-    @TransientDbRetry
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findActiveByUsername(username);
-    }
-
-
     @Transactional(readOnly = true)
     @PreAuthorize("@userPolicy.canListUsers()")
     @TransientDbRetry
@@ -102,22 +82,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository.findAllActiveByRole(role).stream().map(userResponseMapper::toDto).toList();
     }
 
-    @Transactional(readOnly = true)
-    @TransientDbRetry
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
-
-    @Transactional(readOnly = true)
-    @TransientDbRetry
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
     @Transactional
     @PreAuthorize("@userPolicy.canDeleteUser(#id)")
     public void deleteUser(Long id) {
-        User user = findEntityByIdForced(id);
+        User user = requireActiveById(id);
         user.setStatus(Status.DELETED);
         String username = user.getUsername();
 
@@ -125,23 +93,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userRepository.save(user);
     }
 
-    private void clearUserCache(String username) {
-        var byUsername = cacheManager.getCache(CacheNames.USERS_BY_USERNAME);
-        if (byUsername == null) {
-            return;
-        }
-        try {
-            byUsername.evict(username);
-        } catch (RuntimeException ex) {
-            logger.warn("Cache EVICT skipped for cache={} key={} cause={}",
-                    CacheNames.USERS_BY_USERNAME, username, ex.getMessage());
-        }
-    }
-
     @Transactional
     @PreAuthorize("@userPolicy.canUpdateUser(#id)")
     public UserResponse update(Long id, UpdateUserRequest request) {
-        User user = findEntityByIdForced(id);
+        User user = requireActiveById(id);
         clearUserCache(user.getUsername());
         if (request.username() != null) {
             user.setUsername(request.username());
@@ -163,7 +118,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Transactional
     @PreAuthorize("@userPolicy.canAssignRole()")
     public UserResponse assignRole(Long id, Role role) {
-        User user = findEntityByIdForced(id);
+        User user = requireActiveById(id);
         clearUserCache(user.getUsername());
         user.setRole(role);
         userRepository.save(user);
@@ -173,28 +128,25 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("@userPolicy.canReadUser(#id)")
-    @TransientDbRetry
     public UserResponse findByIdForced(Long id) {
-        return this.findById(id)
+        return userResponseMapper.toDto(requireActiveById(id));
+    }
+
+    @Override
+    @Cacheable(cacheNames = CacheNames.USERS_BY_USERNAME,
+            key = "#username",
+            unless = "#result == null")
+    @TransientDbRetry
+    public User requireActiveByUsername(String username) {
+        return userRepository.findActiveByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     @Override
     @TransientDbRetry
-    public User findEntityByIdForced(Long id) {
+    public User requireActiveById(Long id) {
         return userRepository.findActiveById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-    }
-
-    @Override
-    @TransientDbRetry
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findActiveByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    }
-
-    public UserResponse toDto(@Nullable User user) {
-        return (user != null) ? userResponseMapper.toDto(user) : null;
     }
 
     @Transactional(readOnly = true)
@@ -212,5 +164,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .stream()
                 .map(userResponseMapper::toDto)
                 .toList();
+    }
+
+    private void clearUserCache(String username) {
+        var usersByUsername = cacheManager.getCache(CacheNames.USERS_BY_USERNAME);
+        if (usersByUsername == null) {
+            return;
+        }
+        try {
+            usersByUsername.evict(username);
+        } catch (RuntimeException ex) {
+            logger.warn("Cache EVICT skipped for cache={} key={} cause={}",
+                    CacheNames.USERS_BY_USERNAME, username, ex.getMessage());
+        }
     }
 }

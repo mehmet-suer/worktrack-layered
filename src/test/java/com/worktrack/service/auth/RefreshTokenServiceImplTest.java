@@ -82,7 +82,7 @@ public class RefreshTokenServiceImplTest {
         ReflectionTestUtils.setField(existing, "id", 99L);
 
         when(refreshTokenRepository.findByTokenHash(any())).thenReturn(Optional.of(existing));
-        when(userService.findEntityByIdForced(1L)).thenReturn(user);
+        when(userService.requireActiveById(1L)).thenReturn(user);
         when(refreshTokenRepository.revokeIfActive(eq(99L), any(), any())).thenReturn(1);
 
         RefreshTokenService.RotationResult result = refreshTokenService.rotate(oldRawToken);
@@ -102,7 +102,7 @@ public class RefreshTokenServiceImplTest {
         ReflectionTestUtils.setField(existing, "id", 77L);
 
         when(refreshTokenRepository.findByTokenHash(any())).thenReturn(Optional.of(existing));
-        when(userService.findEntityByIdForced(1L)).thenReturn(user);
+        when(userService.requireActiveById(1L)).thenReturn(user);
         when(refreshTokenRepository.revokeIfActive(eq(77L), any(), any())).thenReturn(0);
 
         assertThrowsExactly(
@@ -122,7 +122,7 @@ public class RefreshTokenServiceImplTest {
         ReflectionTestUtils.setField(existing, "id", 55L);
 
         when(refreshTokenRepository.findByTokenHash(any())).thenReturn(Optional.of(existing));
-        when(userService.findEntityByIdForced(1L)).thenThrow(new EntityNotFoundException("User not found"));
+        when(userService.requireActiveById(1L)).thenThrow(new EntityNotFoundException("User not found"));
 
         assertThrowsExactly(
                 InvalidRefreshTokenException.class,
@@ -141,7 +141,7 @@ public class RefreshTokenServiceImplTest {
         ReflectionTestUtils.setField(existing, "id", 88L);
 
         when(refreshTokenRepository.findByTokenHash(any())).thenReturn(Optional.of(existing));
-        when(userService.findEntityByIdForced(1L)).thenReturn(user);
+        when(userService.requireActiveById(1L)).thenReturn(user);
         when(refreshTokenRepository.revokeIfActive(eq(88L), any(), any())).thenReturn(0);
 
         assertThrowsExactly(
