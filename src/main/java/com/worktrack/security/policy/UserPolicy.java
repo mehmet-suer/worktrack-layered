@@ -13,49 +13,49 @@ public class UserPolicy {
     }
 
     /**
-     * Used by @PreAuthorize in UserServiceImpl.
+     * Used by @PreAuthorize in UserService.
      */
     public boolean canReadUser(Long userId) {
         return isAdmin() || isLoggedInUser(userId);
     }
 
     /**
-     * Used by @PreAuthorize in UserServiceImpl.
+     * Used by @PreAuthorize in UserService.
      */
     public boolean canUpdateUser(Long userId) {
         return isAdmin() || isLoggedInUser(userId);
     }
 
     /**
-     * Used by @PreAuthorize in UserServiceImpl.
+     * Used by @PreAuthorize in UserService.
      */
     public boolean canDeleteUser(Long userId) {
         return isAdmin() || isLoggedInUser(userId);
     }
 
     /**
-     * Used by @PreAuthorize in UserServiceImpl.
+     * Used by @PreAuthorize in UserService.
      */
     public boolean canSearchUsers() {
         return isAdmin();
     }
 
     /**
-     * Used by @PreAuthorize in UserServiceImpl.
+     * Used by @PreAuthorize in UserService.
      */
     public boolean canListUsers() {
         return isAdmin();
     }
 
     /**
-     * Used by @PreAuthorize in com.worktrack.service.user.UserServiceImpl / findAllByRole
+     * Used by @PreAuthorize in com.worktrack.service.user.UserService / findAllByRole
      */
     public boolean canListUsersByRole() {
         return isAdmin();
     }
 
     /**
-     * Used by @PreAuthorize in UserServiceImpl / assignRole
+     * Used by @PreAuthorize in UserService / assignRole
      */
     public boolean canAssignRole() {
         return isAdmin();

@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceImplTest {
+class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -57,7 +57,7 @@ class UserServiceImplTest {
     private Cache cache;
 
     @InjectMocks
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @Captor
     private ArgumentCaptor<User> userCaptor;
